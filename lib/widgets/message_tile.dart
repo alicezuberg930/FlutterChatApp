@@ -76,7 +76,7 @@ class _MessageTileState extends State<MessageTile> {
                                 bottomRight: Radius.circular(20),
                               ),
                         color:
-                            widget.sentbyme ? Colors.blue : Colors.grey[700]),
+                            widget.sentbyme ? Colors.blue : Colors.grey[300]),
                     child: Text(
                       widget.message,
                       textAlign: TextAlign.center,

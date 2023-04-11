@@ -29,11 +29,10 @@ class Database {
     DocumentReference conversationDocumentReference =
         await conversationCollection.add({
       "users": users,
-      "recieverAvatar": "",
+      "reciepientAvatar": "",
       "conversationId": "",
     });
     await conversationDocumentReference.update({
-      "members": FieldValue.arrayUnion(["${uid}_$users"]),
       "conversationId": conversationDocumentReference.id,
     });
   }
@@ -52,6 +51,11 @@ class Database {
   // get user groups
   getUserGroups() async {
     return userCollection.doc(uid).snapshots();
+  }
+
+  Future getGroupAvatar(String groupId) async {
+    DocumentSnapshot doc = await groupCollection.doc(groupId).get();
+    return doc["groupIcon"];
   }
 
   // creating a group

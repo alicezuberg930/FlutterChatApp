@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
           : SingleChildScrollView(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Form(
                   key: formkey,
                   child: Column(
@@ -46,20 +46,20 @@ class _LoginPageState extends State<LoginPage> {
                       const Text(
                         "Tiến's Chat app",
                         style: TextStyle(
-                            fontSize: 40, fontWeight: FontWeight.bold),
+                            fontSize: 35, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(
                         height: 10,
                       ),
                       const Text(
-                        'Đăng nhập ngay để nhắn tin với thư của tiến',
+                        'Đăng nhập ngay để nhắn tin với nhau',
                         style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(height: 25),
                       Image.asset(
                         "./assets/images/login_background.png",
-                        width: MediaQuery.of(context).size.width * 0.7,
+                        width: MediaQuery.of(context).size.width * 0.65,
                       ),
                       const SizedBox(height: 25),
                       TextFormField(
@@ -72,11 +72,12 @@ class _LoginPageState extends State<LoginPage> {
                           }
                         },
                         decoration: textInutDecoration.copyWith(
-                            labelText: "Email",
-                            prefix: Icon(
-                              Icons.email,
-                              color: Theme.of(context).primaryColor,
-                            )),
+                          labelText: "Email",
+                          prefix: Icon(
+                            Icons.email,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 15),
                       TextFormField(

@@ -16,27 +16,17 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   QuerySnapshot? searchSnapshot;
-  bool hasUserSearch = false;
-  bool _isloading = false;
-  bool _isJoined = false;
   String? username;
   String? password;
   User? user;
+  bool hasUserSearch = false;
+  bool _isloading = false;
+  bool _isJoined = false;
+
   @override
   void initState() {
     getCurrentUserName();
     super.initState();
-  }
-
-  getCurrentUserName() async {
-    await Helper.getUserName().then((value) {
-      setState(
-        () {
-          username = value!;
-        },
-      );
-    });
-    user = FirebaseAuth.instance.currentUser;
   }
 
   @override
@@ -122,7 +112,8 @@ class _SearchPageState extends State<SearchPage> {
                   username!,
                   searchSnapshot!.docs[index]['groupId'],
                   searchSnapshot!.docs[index]['groupName'],
-                  searchSnapshot!.docs[index]['admin']);
+                  searchSnapshot!.docs[index]['admin'],
+                  searchSnapshot!.docs[index]['groupIcon']);
             },
           )
         : const SizedBox(width: 0, height: 0);
@@ -138,7 +129,8 @@ class _SearchPageState extends State<SearchPage> {
                   username!,
                   searchSnapshot!.docs[index]['groupId'],
                   searchSnapshot!.docs[index]['groupName'],
-                  searchSnapshot!.docs[index]['admin']);
+                  searchSnapshot!.docs[index]['admin'],
+                  searchSnapshot!.docs[index]['groupIcon']);
             },
           )
         : const SizedBox(width: 0, height: 0);
@@ -166,8 +158,8 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  Widget groupTile(
-      String userName, String groupId, String groupName, String admin) {
+  Widget groupTile(String userName, String groupId, String groupName,
+      String admin, String groupIcon) {
     checkUserJoined(userName, groupId, groupName, admin);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -197,9 +189,11 @@ class _SearchPageState extends State<SearchPage> {
               nextScreen(
                   context,
                   ChatPage(
-                      groupId: groupId,
-                      groupName: groupName,
-                      userName: userName));
+                    groupId: groupId,
+                    groupName: groupName,
+                    userName: userName,
+                    groupAvatar: groupIcon,
+                  ));
             });
           } else {
             setState(() {
@@ -234,5 +228,16 @@ class _SearchPageState extends State<SearchPage> {
               ),
       ),
     );
+  }
+
+  getCurrentUserName() async {
+    await Helper.getUserName().then((value) {
+      setState(
+        () {
+          username = value!;
+        },
+      );
+    });
+    user = FirebaseAuth.instance.currentUser;
   }
 }

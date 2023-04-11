@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/pages/group_info_page.dart';
 import 'package:flutter_chat_app/service/database.dart';
@@ -15,11 +13,13 @@ class ChatPage extends StatefulWidget {
   final String groupId;
   final String groupName;
   final String userName;
+  final String groupAvatar;
   const ChatPage(
       {Key? key,
       required this.groupId,
       required this.groupName,
-      required this.userName})
+      required this.userName,
+      required this.groupAvatar})
       : super(key: key);
 
   @override
@@ -28,44 +28,14 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   TextEditingController chatController = TextEditingController();
-  String adminName = "";
-  Stream<QuerySnapshot>? chats;
-  final picker = ImagePicker();
+  ImagePicker picker = ImagePicker();
+  String? adminName;
+  Stream? chats;
+
   @override
   void initState() {
     getChatAndAdmin();
     super.initState();
-  }
-
-  chooseImage(ImageSource src) async {
-    await picker.pickImage(source: src, imageQuality: 100).then(
-          (value) => {
-            if (value != null)
-              {
-                FileFirebase()
-                    .uploadImage(File(value.path), "group_image")
-                    .then(
-                  (value) {
-                    String val = value;
-                    sendMessage(val);
-                  },
-                )
-              }
-          },
-        );
-  }
-
-  getChatAndAdmin() {
-    Database().getChats(widget.groupId).then((value) {
-      setState(() {
-        chats = value;
-      });
-    });
-    Database().getGroupAdmin(widget.groupId).then((value) {
-      setState(() {
-        adminName = value;
-      });
-    });
   }
 
   @override
@@ -82,9 +52,11 @@ class _ChatPageState extends State<ChatPage> {
               nextScreen(
                 context,
                 GroupInfoPage(
-                    groupId: widget.groupId,
-                    groupName: widget.groupName,
-                    adminName: adminName),
+                  groupId: widget.groupId,
+                  groupName: widget.groupName,
+                  adminName: adminName!,
+                  groupAvatar: widget.groupAvatar,
+                ),
               );
             },
             icon: const Icon(Icons.info),
@@ -208,5 +180,36 @@ class _ChatPageState extends State<ChatPage> {
             : Container();
       },
     );
+  }
+
+  chooseImage(ImageSource src) async {
+    await picker.pickImage(source: src, imageQuality: 100).then(
+          (value) => {
+            if (value != null)
+              {
+                FileFirebase()
+                    .uploadImage(File(value.path), "group_image")
+                    .then(
+                  (value) {
+                    String val = value;
+                    sendMessage(val);
+                  },
+                )
+              }
+          },
+        );
+  }
+
+  getChatAndAdmin() {
+    Database().getChats(widget.groupId).then((value) {
+      setState(() {
+        chats = value;
+      });
+    });
+    Database().getGroupAdmin(widget.groupId).then((value) {
+      setState(() {
+        adminName = value;
+      });
+    });
   }
 }

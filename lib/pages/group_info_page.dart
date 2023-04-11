@@ -10,11 +10,13 @@ class GroupInfoPage extends StatefulWidget {
   final String groupId;
   final String groupName;
   final String adminName;
+  final String groupAvatar;
   const GroupInfoPage(
       {Key? key,
       required this.groupId,
       required this.groupName,
-      required this.adminName})
+      required this.adminName,
+      required this.groupAvatar})
       : super(key: key);
 
   @override
@@ -24,20 +26,11 @@ class GroupInfoPage extends StatefulWidget {
 class _GroupInfoPageState extends State<GroupInfoPage> {
   Authentication authentication = Authentication();
   Stream? members;
+
   @override
   void initState() {
     getGroupMembers();
     super.initState();
-  }
-
-  getGroupMembers() async {
-    Database(uid: FirebaseAuth.instance.currentUser!.uid)
-        .getGroupMembers(widget.groupId)
-        .then((value) {
-      setState(() {
-        members = value;
-      });
-    });
   }
 
   @override
@@ -88,21 +81,29 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  color: Theme.of(context).primaryColor.withOpacity(0.2)),
+                borderRadius: BorderRadius.circular(30),
+                color: Theme.of(context).primaryColor.withOpacity(0.2),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Theme.of(context).primaryColor,
-                      child: Text(
-                          widget.groupName.substring(0, 1).toUpperCase(),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white))),
+                  widget.groupAvatar != ""
+                      ? CircleAvatar(
+                          radius: 30,
+                          backgroundImage: NetworkImage(widget.groupAvatar),
+                        )
+                      : CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Theme.of(context).primaryColor,
+                          child: Text(
+                            widget.groupName.substring(0, 1).toUpperCase(),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
+                          ),
+                        ),
                   const SizedBox(height: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,5 +180,15 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
         }
       },
     );
+  }
+
+  getGroupMembers() async {
+    Database(uid: FirebaseAuth.instance.currentUser!.uid)
+        .getGroupMembers(widget.groupId)
+        .then((value) {
+      setState(() {
+        members = value;
+      });
+    });
   }
 }

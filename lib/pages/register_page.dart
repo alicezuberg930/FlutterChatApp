@@ -33,7 +33,7 @@ class _RegisterPageState extends State<RegisterPage> {
           : SingleChildScrollView(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Form(
                   key: formkey,
                   child: Column(
@@ -43,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const Text(
                         "Tiến's Chat app",
                         style: TextStyle(
-                            fontSize: 40, fontWeight: FontWeight.bold),
+                            fontSize: 35, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(
                         height: 10,
@@ -54,7 +54,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             fontSize: 15, fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(height: 25),
-                      Image.asset("./assets/images/login_background.png"),
+                      Image.asset(
+                        "./assets/images/login_background.png",
+                        width: MediaQuery.of(context).size.width * 0.65,
+                      ),
                       const SizedBox(height: 25),
                       TextFormField(
                         onChanged: (value) =>
