@@ -12,6 +12,7 @@ import 'package:flutter_chat_app/shared/gets.dart';
 import 'package:flutter_chat_app/widgets/form_input.dart';
 import 'package:flutter_chat_app/widgets/group_tile.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
+import 'package:flutter_chat_app/widgets/user_tile.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -26,12 +27,14 @@ class _HomePageState extends State<HomePage> {
   ImagePicker picker = ImagePicker();
   File? userAvatar;
   String? userName;
+  String frienduserName = "";
   String? email;
   String? avatar;
   String groupAvatar = "";
-  Stream? groups;
-  bool _isloading = false;
+  String friendAvatar = "";
+  Stream? userMetaData;
   String? groupName;
+  bool _isloading = false;
 
   @override
   void initState() {
@@ -45,10 +48,11 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         actions: [
           IconButton(
-              onPressed: () {
-                nextScreen(context, const SearchPage());
-              },
-              icon: const Icon(Icons.search))
+            onPressed: () {
+              nextScreen(context, const SearchPage());
+            },
+            icon: const Icon(Icons.search),
+          )
         ],
         elevation: 0,
         centerTitle: true,
@@ -59,134 +63,121 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      drawer: Drawer(
-        width: MediaQuery.of(context).size.width * 0.8,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 30),
-          children: [
-            Container(
-              alignment: Alignment.center,
-              child: Stack(
-                children: [
-                  avatar != ""
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: Image(
-                            image: NetworkImage(avatar!),
-                            height: 150,
-                            width: 150,
-                            fit: BoxFit.cover,
-                            filterQuality: FilterQuality.medium,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.account_circle,
-                          size: 150,
-                          color: Colors.blueGrey,
-                        ),
-                  Positioned(
-                    bottom: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          color: Colors.grey,
-                          borderRadius: BorderRadius.circular(50)),
-                      child: InkWell(
-                        onTap: () => {showImagePicker(context, chooseImage)},
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.black,
-                          size: 24.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              userName!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-            const Divider(height: 2),
-            ListTile(
-              onTap: () => {},
-              selectedColor: Theme.of(context).primaryColor,
-              selected: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.group),
-              title: const Text(
-                "Nhóm",
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-            ),
-            ListTile(
-              onTap: () => {
-                nextScreen(
-                    context,
-                    ProfilePage(
-                      username: userName!,
-                      email: email!,
-                    ))
-              },
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.verified_user),
-              title: const Text(
-                "Thông tin cá nhân",
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-            ),
-            ListTile(
-              onTap: () async => {
-                showDialog(
-                  barrierDismissible: false,
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text("Đăng xuất"),
-                      content: const Text("Bạn có muốn đăng xuất?"),
-                      actions: [
-                        IconButton(
-                            onPressed: () => {Navigator.pop(context)},
-                            icon: const Icon(Icons.cancel, color: Colors.red)),
-                        IconButton(
-                            onPressed: () async => {
-                                  authentication.signOut(),
-                                  nextScreen(context, const LoginPage())
-                                },
-                            icon: const Icon(Icons.done, color: Colors.green)),
-                      ],
-                    );
-                  },
-                ),
-              },
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text(
-                "Đăng xuất",
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-            )
-          ],
-        ),
-      ),
-      body: groupList(),
+      drawer: customDrawerWidget(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => {popUpDiolog(context)},
         elevation: 0,
         backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            userScrollWidget(),
+            groupListWidget(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  groupListWidget() {
+    return StreamBuilder(
+      stream: userMetaData,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data['groups'] != null) {
+            if (snapshot.data['groups'].length > 0) {
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: snapshot.data['groups'].length,
+                itemBuilder: (context, index) {
+                  int reverseIndex = snapshot.data['groups'].length - index - 1;
+                  Database()
+                      .getGroupAvatar(
+                          getId(snapshot.data['groups'][reverseIndex]))
+                      .then((value) => {
+                            setState(() {
+                              groupAvatar = value;
+                            })
+                          });
+                  return GroupTile(
+                    userName: snapshot.data['fullName'],
+                    groupId: getId(snapshot.data['groups'][reverseIndex]),
+                    groupName: getName(snapshot.data['groups'][reverseIndex]),
+                    groupAvatar: groupAvatar,
+                  );
+                },
+              );
+            } else {
+              return noGroupWidget();
+            }
+          } else {
+            return noGroupWidget();
+          }
+        } else {
+          return Center(
+            child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor),
+          );
+        }
+      },
+    );
+  }
+
+  userListWidget() {
+    return StreamBuilder(
+      stream: userMetaData,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data['friends'] != null) {
+            if (snapshot.data['friends'].length > 0) {
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: snapshot.data['friends'].length,
+                itemBuilder: (context, index) {
+                  int reverseIndex =
+                      snapshot.data['friends'].length - index - 1;
+                  Database()
+                      .getFriendAvatar(
+                          getId(snapshot.data['friends'][reverseIndex]))
+                      .then((value) => {
+                            setState(() {
+                              friendAvatar = value;
+                            })
+                          });
+                  Database()
+                      .getFriendUsername(snapshot.data['friends'][reverseIndex])
+                      .then((value) => {
+                            setState(
+                              () {
+                                frienduserName = value;
+                              },
+                            )
+                          });
+                  return UserTile(
+                    userName: snapshot.data['fullName'],
+                    friendUid: snapshot.data['friends'][reverseIndex],
+                    friendName: frienduserName,
+                    friendAvatar: friendAvatar,
+                  );
+                },
+              );
+            } else {
+              return noGroupWidget();
+            }
+          } else {
+            return noGroupWidget();
+          }
+        } else {
+          return Center(
+            child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor),
+          );
+        }
+      },
     );
   }
 
@@ -274,44 +265,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  groupList() {
-    return StreamBuilder(
-        stream: groups,
-        builder: (context, AsyncSnapshot snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data['groups'] != null) {
-              if (snapshot.data['groups'].length > 0) {
-                return ListView.builder(
-                  itemCount: snapshot.data['groups'].length,
-                  itemBuilder: (context, index) {
-                    int reverseIndex =
-                        snapshot.data['groups'].length - index - 1;
-                    Database()
-                        .getGroupAvatar(
-                            getId(snapshot.data['groups'][reverseIndex]))
-                        .then((value) => groupAvatar = value);
-                    return GroupTile(
-                        userName: snapshot.data['fullName'],
-                        groupId: getId(snapshot.data['groups'][reverseIndex]),
-                        groupName:
-                            getName(snapshot.data['groups'][reverseIndex]),
-                        groupAvatar: groupAvatar);
-                  },
-                );
-              } else {
-                return noGroupWidget();
-              }
-            } else {
-              return noGroupWidget();
-            }
-          } else {
-            return Center(
-                child: CircularProgressIndicator(
-                    color: Theme.of(context).primaryColor));
-          }
-        });
-  }
-
   noGroupWidget() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 25),
@@ -347,10 +300,10 @@ class _HomePageState extends State<HomePage> {
           setState(() => {avatar = value!})
         });
     await Database(uid: FirebaseAuth.instance.currentUser!.uid)
-        .getUserGroups()
+        .getUserMetaData()
         .then((snapshots) {
       setState(() {
-        groups = snapshots;
+        userMetaData = snapshots;
       });
     });
   }
@@ -417,5 +370,177 @@ class _HomePageState extends State<HomePage> {
         userAvatar = File(croppedImage.path);
       });
     }
+  }
+
+  customDrawerWidget() {
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.7,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 30),
+        children: [
+          Container(
+            alignment: Alignment.center,
+            child: Stack(
+              children: [
+                avatar != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: Image(
+                          image: NetworkImage(avatar!),
+                          height: 150,
+                          width: 150,
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.medium,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.account_circle,
+                        size: 150,
+                        color: Colors.blueGrey,
+                      ),
+                Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: InkWell(
+                      onTap: () => {showImagePicker(context, chooseImage)},
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.black,
+                        size: 24.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 15),
+          Text(
+            userName!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 30),
+          const Divider(height: 2),
+          ListTile(
+            onTap: () => {},
+            selectedColor: Theme.of(context).primaryColor,
+            selected: true,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            leading: const Icon(Icons.group),
+            title: const Text(
+              "Nhóm",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          ListTile(
+            onTap: () => {
+              nextScreen(
+                  context,
+                  ProfilePage(
+                    username: userName!,
+                    email: email!,
+                  ))
+            },
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            leading: const Icon(Icons.verified_user),
+            title: const Text(
+              "Thông tin cá nhân",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          ListTile(
+            onTap: () async => {
+              showDialog(
+                barrierDismissible: false,
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text("Đăng xuất"),
+                    content: const Text("Bạn có muốn đăng xuất?"),
+                    actions: [
+                      IconButton(
+                        onPressed: () => {Navigator.pop(context)},
+                        icon: const Icon(Icons.cancel, color: Colors.red),
+                      ),
+                      IconButton(
+                        onPressed: () async => {
+                          authentication.signOut(),
+                          nextScreen(context, const LoginPage())
+                        },
+                        icon: const Icon(Icons.done, color: Colors.green),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            },
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text(
+              "Đăng xuất",
+              style:
+                  TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  userScrollWidget() {
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: 15,
+        bottom: 15,
+        left: 15,
+      ),
+      child: SizedBox(
+        height: 110,
+        child: ListView.builder(
+          shrinkWrap: true,
+          scrollDirection: Axis.horizontal,
+          itemCount: 10,
+          itemBuilder: (context, index) {
+            return Container(
+              height: 115,
+              margin: const EdgeInsets.only(right: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    child: Text('T'),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(top: 10),
+                    width: 80,
+                    child: const Text(
+                      'Nguyễn Vĩnh Tiến',
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 }

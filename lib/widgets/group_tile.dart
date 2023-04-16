@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/pages/chat_page.dart';
+import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/widgets/form_input.dart';
 
 class GroupTile extends StatefulWidget {
@@ -20,6 +24,36 @@ class GroupTile extends StatefulWidget {
 }
 
 class _GroupTileState extends State<GroupTile> {
+  StreamSubscription<DocumentSnapshot>? _documentStream;
+  String recentMessage = "";
+  @override
+  void initState() {
+    Database()
+        .getGroupRecentMessage(widget.groupId)
+        .then((value) => {recentMessage = value});
+    listenForDocumentChange(widget.groupId);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _documentStream!.cancel();
+    super.dispose();
+  }
+
+  listenForDocumentChange(String documentId) {
+    _documentStream = FirebaseFirestore.instance
+        .collection('groups')
+        .doc(documentId)
+        .snapshots()
+        .listen((documentSnapshot) {
+      var myData = documentSnapshot.data();
+      setState(() {
+        recentMessage = myData!['recentMessage'];
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -35,6 +69,7 @@ class _GroupTileState extends State<GroupTile> {
         );
       },
       child: Container(
+        width: MediaQuery.of(context).size.width,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
         child: ListTile(
           leading: widget.groupAvatar == ""
@@ -56,10 +91,14 @@ class _GroupTileState extends State<GroupTile> {
                 ),
           title: Text(
             widget.groupName,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.black45),
           ),
-          subtitle:
-              const Text('Tin nhắn mới nhất', style: TextStyle(fontSize: 13)),
+          subtitle: Text(
+            recentMessage,
+            style: const TextStyle(
+                fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
         ),
       ),
     );

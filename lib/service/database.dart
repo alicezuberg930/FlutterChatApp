@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Database {
@@ -41,23 +43,6 @@ class Database {
     return await userCollection.doc(uid).update({"profile_picture": url});
   }
 
-  // getting user data
-  Future getUserData(String email) async {
-    QuerySnapshot snapshot =
-        await userCollection.where("email", isEqualTo: email).get();
-    return snapshot;
-  }
-
-  // get user groups
-  getUserGroups() async {
-    return userCollection.doc(uid).snapshots();
-  }
-
-  Future getGroupAvatar(String groupId) async {
-    DocumentSnapshot doc = await groupCollection.doc(groupId).get();
-    return doc["groupIcon"];
-  }
-
   // creating a group
   Future createGroup(String userName, String id, String groupName) async {
     DocumentReference groupDocumentReference = await groupCollection.add({
@@ -81,44 +66,22 @@ class Database {
     });
   }
 
-  // getting the chats
-  getChats(String groupId) async {
-    return groupCollection
-        .doc(groupId)
-        .collection("messages")
-        .orderBy("time")
-        .snapshots();
-  }
-
-  Future getGroupAdmin(String groupId) async {
-    DocumentSnapshot documentSnapshot =
-        await groupCollection.doc(groupId).get();
-    return documentSnapshot['admin'];
-  }
-
-  // get group members
-  getGroupMembers(groupId) async {
-    return groupCollection.doc(groupId).snapshots();
-  }
-
-  // search for groups
-  searchGroups(String groupName) async {
-    return groupCollection.where("groupName", isEqualTo: groupName).get();
-  }
-
-  //search for users
-  searchUsers(String userName) async {
-    return userCollection.where("fullName", isEqualTo: userName).get();
-  }
-
-  // function -> bool
-  Future<bool> isUserJoined(
-      String groupName, String groupId, String userName) async {
+  Future isUserJoined(String groupName, String groupId, String userName) async {
     DocumentReference userDocumentReference = userCollection.doc(uid);
     DocumentSnapshot documentSnapshot = await userDocumentReference.get();
-
     List<dynamic> groups = await documentSnapshot['groups'];
     if (groups.contains("${groupId}_$groupName")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future isFriended(String strangerUid) async {
+    DocumentReference userDocumentReference = userCollection.doc(uid);
+    DocumentSnapshot documentSnapshot = await userDocumentReference.get();
+    List<dynamic> friends = await documentSnapshot['friends'];
+    if (friends.contains(strangerUid)) {
       return true;
     } else {
       return false;
@@ -173,4 +136,69 @@ class Database {
       "recentMessageTime": chatMessageData['time'].toString(),
     });
   }
+
+  // getting user data
+  getUserEmail(String email) async {
+    return userCollection.where("email", isEqualTo: email).get();
+  }
+
+  // get user groups and friends
+  getUserMetaData() async {
+    return userCollection.doc(uid).snapshots();
+  }
+
+  //get recent message
+  Future getGroupRecentMessage(String groupId) async {
+    DocumentSnapshot doc = await groupCollection.doc(groupId).get();
+    return doc["recentMessage"];
+  }
+
+  //get the avatar of the group based on the group id
+  Future getGroupAvatar(String groupId) async {
+    DocumentSnapshot doc = await groupCollection.doc(groupId).get();
+    return doc["groupIcon"];
+  }
+
+  //get the avatar of a friend based on the user id
+  Future getFriendAvatar(String userId) async {
+    DocumentSnapshot doc = await userCollection.doc(userId).get();
+    return doc["profile_picture"];
+  }
+
+  Future getFriendUsername(String userId) async {
+    DocumentSnapshot doc = await userCollection.doc(userId).get();
+    return doc["fullName"];
+  }
+
+  // getting the chats
+  getChats(String groupId) async {
+    return groupCollection
+        .doc(groupId)
+        .collection("messages")
+        .orderBy("time")
+        .snapshots();
+  }
+
+  Future getGroupAdmin(String groupId) async {
+    DocumentSnapshot documentSnapshot =
+        await groupCollection.doc(groupId).get();
+    return documentSnapshot['admin'];
+  }
+
+  // get group members
+  getGroupMembers(groupId) async {
+    return groupCollection.doc(groupId).snapshots();
+  }
+
+  // search for groups
+  searchGroups(String groupName) async {
+    return groupCollection.where("groupName", isEqualTo: groupName).get();
+  }
+
+  //search for users
+  searchUsers(String userName) async {
+    return userCollection.where("fullName", isEqualTo: userName).get();
+  }
+
+  addFriend() {}
 }

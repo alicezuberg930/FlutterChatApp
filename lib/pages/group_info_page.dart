@@ -92,7 +92,9 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                   widget.groupAvatar != ""
                       ? CircleAvatar(
                           radius: 30,
-                          backgroundImage: NetworkImage(widget.groupAvatar),
+                          backgroundImage: NetworkImage(
+                            widget.groupAvatar,
+                          ),
                         )
                       : CircleAvatar(
                           radius: 30,

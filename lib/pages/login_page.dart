@@ -152,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
         if (value == true) {
           QuerySnapshot snapshot =
               await Database(uid: FirebaseAuth.instance.currentUser!.uid)
-                  .getUserData(email);
+                  .getUserEmail(email);
           await Helper.saveUserLoggedInStatus(true);
           await Helper.saveUserName(snapshot.docs[0]["fullName"]);
           await Helper.saveUserEmail(email);

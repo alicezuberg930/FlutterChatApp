@@ -10,11 +10,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
     await Firebase.initializeApp(
-        options: FirebaseOptions(
-            apiKey: Constants.apiKey,
-            projectId: Constants.projectId,
-            messagingSenderId: Constants.messagingSenderId,
-            appId: Constants.appId));
+      options: FirebaseOptions(
+        apiKey: Constants.apiKey,
+        projectId: Constants.projectId,
+        messagingSenderId: Constants.messagingSenderId,
+        appId: Constants.appId,
+      ),
+    );
   } else {
     await Firebase.initializeApp();
   }
@@ -32,8 +34,8 @@ class _MyChatAppState extends State<MyChatApp> {
   bool isSignedIn = false;
   @override
   void initState() {
-    super.initState();
     getUserLoggedInStatus();
+    super.initState();
   }
 
   getUserLoggedInStatus() async {
@@ -49,8 +51,9 @@ class _MyChatAppState extends State<MyChatApp> {
     return MaterialApp(
       title: 'Flutter chat app',
       theme: ThemeData(
-          primaryColor: Constants.primaryColor,
-          scaffoldBackgroundColor: Colors.white),
+        primaryColor: Constants.primaryColor,
+        scaffoldBackgroundColor: Colors.white,
+      ),
       home: isSignedIn ? const HomePage() : const LoginPage(),
     );
   }
