@@ -24,24 +24,24 @@ class _UserTileState extends State<UserTile> {
   StreamSubscription<DocumentSnapshot>? _documentStream;
   String recentMessage = "";
 
-  @override
-  void dispose() {
-    _documentStream!.cancel();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _documentStream!.cancel();
+  //   super.dispose();
+  // }
 
-  listenForDocumentChange(String documentId) {
-    _documentStream = FirebaseFirestore.instance
-        .collection('groups')
-        .doc(documentId)
-        .snapshots()
-        .listen((documentSnapshot) {
-      var myData = documentSnapshot.data();
-      setState(() {
-        recentMessage = myData!['recentMessage'];
-      });
-    });
-  }
+  // listenForDocumentChange(String documentId) {
+  //   _documentStream = FirebaseFirestore.instance
+  //       .collection('groups')
+  //       .doc(documentId)
+  //       .snapshots()
+  //       .listen((documentSnapshot) {
+  //     var myData = documentSnapshot.data();
+  //     setState(() {
+  //       recentMessage = myData!['recentMessage'];
+  //     });
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

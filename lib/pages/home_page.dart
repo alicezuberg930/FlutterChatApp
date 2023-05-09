@@ -77,6 +77,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             userScrollWidget(),
             groupListWidget(),
+            // userListWidget(),
           ],
         ),
       ),
@@ -99,9 +100,9 @@ class _HomePageState extends State<HomePage> {
                       .getGroupAvatar(
                           getId(snapshot.data['groups'][reverseIndex]))
                       .then((value) => {
-                            setState(() {
-                              groupAvatar = value;
-                            })
+                            // setState(() {
+                            groupAvatar = value
+                            // })
                           });
                   return GroupTile(
                     userName: snapshot.data['fullName'],
@@ -141,8 +142,7 @@ class _HomePageState extends State<HomePage> {
                   int reverseIndex =
                       snapshot.data['friends'].length - index - 1;
                   Database()
-                      .getFriendAvatar(
-                          getId(snapshot.data['friends'][reverseIndex]))
+                      .getFriendAvatar(snapshot.data['friends'][reverseIndex])
                       .then((value) => {
                             setState(() {
                               friendAvatar = value;
@@ -151,11 +151,9 @@ class _HomePageState extends State<HomePage> {
                   Database()
                       .getFriendUsername(snapshot.data['friends'][reverseIndex])
                       .then((value) => {
-                            setState(
-                              () {
-                                frienduserName = value;
-                              },
-                            )
+                            // setState(() {
+                            frienduserName = value
+                            // })
                           });
                   return UserTile(
                     userName: snapshot.data['fullName'],
