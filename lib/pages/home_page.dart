@@ -58,8 +58,7 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         title: const Text(
           "Tiến's Messenger",
-          style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Theme.of(context).primaryColor,
       ),
@@ -75,7 +74,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            userScrollWidget(),
+            avatarListWidget(),
             groupListWidget(),
             // userListWidget(),
           ],
@@ -96,14 +95,11 @@ class _HomePageState extends State<HomePage> {
                 itemCount: snapshot.data['groups'].length,
                 itemBuilder: (context, index) {
                   int reverseIndex = snapshot.data['groups'].length - index - 1;
-                  Database()
-                      .getGroupAvatar(
-                          getId(snapshot.data['groups'][reverseIndex]))
-                      .then((value) => {
-                            // setState(() {
-                            groupAvatar = value
-                            // })
-                          });
+                  Database().getGroupAvatar(getId(snapshot.data['groups'][reverseIndex])).then((value) => {
+                        setState(() {
+                          groupAvatar = value;
+                        })
+                      });
                   return GroupTile(
                     userName: snapshot.data['fullName'],
                     groupId: getId(snapshot.data['groups'][reverseIndex]),
@@ -119,10 +115,7 @@ class _HomePageState extends State<HomePage> {
             return noGroupWidget();
           }
         } else {
-          return Center(
-            child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor),
-          );
+          return Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor));
         }
       },
     );
@@ -139,22 +132,17 @@ class _HomePageState extends State<HomePage> {
                 shrinkWrap: true,
                 itemCount: snapshot.data['friends'].length,
                 itemBuilder: (context, index) {
-                  int reverseIndex =
-                      snapshot.data['friends'].length - index - 1;
-                  Database()
-                      .getFriendAvatar(snapshot.data['friends'][reverseIndex])
-                      .then((value) => {
-                            setState(() {
-                              friendAvatar = value;
-                            })
-                          });
-                  Database()
-                      .getFriendUsername(snapshot.data['friends'][reverseIndex])
-                      .then((value) => {
-                            // setState(() {
-                            frienduserName = value
-                            // })
-                          });
+                  int reverseIndex = snapshot.data['friends'].length - index - 1;
+                  Database().getFriendAvatar(snapshot.data['friends'][reverseIndex]).then((value) => {
+                        setState(() {
+                          friendAvatar = value;
+                        })
+                      });
+                  Database().getFriendUsername(snapshot.data['friends'][reverseIndex]).then((value) => {
+                        // setState(() {
+                        frienduserName = value
+                        // })
+                      });
                   return UserTile(
                     userName: snapshot.data['fullName'],
                     friendUid: snapshot.data['friends'][reverseIndex],
@@ -171,8 +159,7 @@ class _HomePageState extends State<HomePage> {
           }
         } else {
           return Center(
-            child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor),
+            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
           );
         }
       },
@@ -187,27 +174,19 @@ class _HomePageState extends State<HomePage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text(
-                'Tạo ra 1 nhóm',
-                textAlign: TextAlign.left,
-              ),
+              title: const Text('Tạo ra 1 nhóm', textAlign: TextAlign.left),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _isloading
                       ? Center(
-                          child: CircularProgressIndicator(
-                            color: Theme.of(context).primaryColor,
-                          ),
+                          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                         )
                       : TextField(
-                          onChanged: (value) => {
-                            setState(() => {groupName = value})
-                          },
+                          onChanged: (value) => {setState(() => groupName = value)},
                           decoration: InputDecoration(
                             enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Theme.of(context).primaryColor),
+                              borderSide: BorderSide(color: Theme.of(context).primaryColor),
                               borderRadius: BorderRadius.circular(15),
                             ),
                             errorBorder: OutlineInputBorder(
@@ -215,8 +194,7 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(15),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Theme.of(context).primaryColor),
+                              borderSide: BorderSide(color: Theme.of(context).primaryColor),
                               borderRadius: BorderRadius.circular(15),
                             ),
                           ),
@@ -225,14 +203,9 @@ class _HomePageState extends State<HomePage> {
               ),
               actions: [
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor),
-                  child: const Text(
-                    'Hủy',
-                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
+                  child: const Text('Hủy'),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -240,19 +213,12 @@ class _HomePageState extends State<HomePage> {
                       setState(() {
                         _isloading = true;
                       });
-                      Database(uid: FirebaseAuth.instance.currentUser!.uid)
-                          .createGroup(
-                              userName!,
-                              FirebaseAuth.instance.currentUser!.uid,
-                              groupName!)
-                          .whenComplete(() => {_isloading = false});
+                      Database(uid: FirebaseAuth.instance.currentUser!.uid).createGroup(userName!, FirebaseAuth.instance.currentUser!.uid, groupName!).whenComplete(() => _isloading = false);
                       Navigator.of(context).pop();
-                      showSnackBar(
-                          context, Colors.green, "Nhóm được tạo thành công");
+                      showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor),
+                  style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
                   child: const Text('Tạo'),
                 )
               ],
@@ -288,18 +254,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   getUserData() async {
-    await Helper.getUserName().then((value) => {
-          setState(() => {email = value!})
-        });
-    await Helper.getUserEmail().then((value) => {
-          setState(() => {userName = value!})
-        });
-    await Helper.getUserAvatar().then((value) => {
-          setState(() => {avatar = value!})
-        });
-    await Database(uid: FirebaseAuth.instance.currentUser!.uid)
-        .getUserMetaData()
-        .then((snapshots) {
+    await Helper.getUserName().then((value) => {userName = value!});
+    await Helper.getUserEmail().then((value) => {email = value!});
+    await Helper.getUserAvatar().then((value) => {avatar = value!});
+    await Database(uid: FirebaseAuth.instance.currentUser!.uid).getUserMetaData().then((snapshots) {
       setState(() {
         userMetaData = snapshots;
       });
@@ -315,10 +273,9 @@ class _HomePageState extends State<HomePage> {
                   FileFirebase().uploadImage(userAvatar!, "avatar").then(
                     (value) {
                       setState(
-                        () => {avatar = value},
+                        () => avatar = value,
                       );
-                      Database(uid: FirebaseAuth.instance.currentUser!.uid)
-                          .updateAvatar(value);
+                      Database(uid: FirebaseAuth.instance.currentUser!.uid).updateAvatar(value);
                     },
                   );
                 }),
@@ -327,14 +284,8 @@ class _HomePageState extends State<HomePage> {
         );
   }
 
-  Future cropImage(String path) async {
-    List<CropAspectRatioPreset> androidPreset = [
-      CropAspectRatioPreset.square,
-      CropAspectRatioPreset.ratio3x2,
-      CropAspectRatioPreset.original,
-      CropAspectRatioPreset.ratio4x3,
-      CropAspectRatioPreset.ratio16x9
-    ];
+  cropImage(String path) async {
+    List<CropAspectRatioPreset> androidPreset = [CropAspectRatioPreset.square, CropAspectRatioPreset.ratio3x2, CropAspectRatioPreset.original, CropAspectRatioPreset.ratio4x3, CropAspectRatioPreset.ratio16x9];
     final croppedImage = await ImageCropper().cropImage(
       sourcePath: path,
       aspectRatioPresets: Platform.isAndroid
@@ -351,12 +302,7 @@ class _HomePageState extends State<HomePage> {
                 CropAspectRatioPreset.ratio7x5,
               ],
       uiSettings: [
-        AndroidUiSettings(
-            toolbarTitle: "Cắt ảnh",
-            toolbarColor: Theme.of(context).primaryColor,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
+        AndroidUiSettings(toolbarTitle: "Cắt ảnh", toolbarColor: Theme.of(context).primaryColor, toolbarWidgetColor: Colors.white, initAspectRatio: CropAspectRatioPreset.original, lockAspectRatio: false),
         IOSUiSettings(
           title: "Cắt ảnh",
         )
@@ -372,15 +318,14 @@ class _HomePageState extends State<HomePage> {
 
   customDrawerWidget() {
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.7,
       child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 30),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         children: [
           Container(
             alignment: Alignment.center,
             child: Stack(
               children: [
-                avatar != null
+                avatar != ""
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(100),
                         child: Image(
@@ -406,7 +351,7 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: InkWell(
-                      onTap: () => {showImagePicker(context, chooseImage)},
+                      onTap: () => showImagePicker(context, chooseImage),
                       child: const Icon(
                         Icons.camera_alt,
                         color: Colors.black,
@@ -430,35 +375,20 @@ class _HomePageState extends State<HomePage> {
             onTap: () => {},
             selectedColor: Theme.of(context).primaryColor,
             selected: true,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.group),
             title: const Text(
               "Nhóm",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
           ListTile(
-            onTap: () => {
-              nextScreen(
-                  context,
-                  ProfilePage(
-                    username: userName!,
-                    email: email!,
-                  ))
-            },
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            onTap: () => {nextScreen(context, ProfilePage(username: userName!, email: email!))},
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.verified_user),
             title: const Text(
               "Thông tin cá nhân",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
           ListTile(
@@ -468,32 +398,33 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text("Đăng xuất"),
-                    content: const Text("Bạn có muốn đăng xuất?"),
+                    title: const Text(
+                      "Đăng xuất",
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    content: const Text("Bạn có chắc chắn đăng xuất?"),
                     actions: [
-                      IconButton(
-                        onPressed: () => {Navigator.pop(context)},
-                        icon: const Icon(Icons.cancel, color: Colors.red),
+                      GestureDetector(
+                        onTap: () => {Navigator.pop(context)},
+                        child: const Text("Không"),
                       ),
-                      IconButton(
-                        onPressed: () async => {
-                          authentication.signOut(),
-                          nextScreen(context, const LoginPage())
+                      GestureDetector(
+                        onTap: () async {
+                          authentication.signOut();
+                          nextScreenReplace(context, const LoginPage());
                         },
-                        icon: const Icon(Icons.done, color: Colors.green),
+                        child: const Text("Có"),
                       ),
                     ],
                   );
                 },
               ),
             },
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.exit_to_app),
             title: const Text(
               "Đăng xuất",
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
           )
         ],
@@ -501,13 +432,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  userScrollWidget() {
+  avatarListWidget() {
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 15,
-        bottom: 15,
-        left: 15,
-      ),
+      padding: const EdgeInsets.only(top: 15, bottom: 15, left: 15),
       child: SizedBox(
         height: 110,
         child: ListView.builder(

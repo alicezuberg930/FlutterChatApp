@@ -27,31 +27,24 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: Theme.of(context).primaryColor,
       ),
       body: _isloading
-          ? Center(
-              child: CircularProgressIndicator(
-                  color: Theme.of(context).primaryColor))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
           : SingleChildScrollView(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Form(
                   key: formkey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
+                    children: [
                       const Text(
                         "Tiến's Chat app",
-                        style: TextStyle(
-                            fontSize: 35, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
+                      const SizedBox(height: 10),
                       const Text(
                         'Đăng ký ngay để tạo tài khoản mới',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w400),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(height: 25),
                       Image.asset(
@@ -60,8 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 25),
                       TextFormField(
-                        onChanged: (value) =>
-                            {setState(() => fullname = value)},
+                        onChanged: (value) => {setState(() => fullname = value)},
                         validator: (value) {
                           if (value!.isNotEmpty) {
                             return null;
@@ -70,11 +62,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           }
                         },
                         decoration: textInutDecoration.copyWith(
-                            labelText: "Tên đầy đủ",
-                            prefix: Icon(
-                              Icons.person,
-                              color: Theme.of(context).primaryColor,
-                            )),
+                          labelText: "Tên đầy đủ",
+                          suffix: Icon(
+                            Icons.person,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 15),
                       TextFormField(
@@ -87,11 +80,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           }
                         },
                         decoration: textInutDecoration.copyWith(
-                            labelText: "Email",
-                            prefix: Icon(
-                              Icons.email,
-                              color: Theme.of(context).primaryColor,
-                            )),
+                          labelText: "Email",
+                          suffix: Icon(
+                            Icons.email,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 15),
                       TextFormField(
@@ -103,11 +97,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             return null;
                           }
                         },
-                        onChanged: (value) =>
-                            {setState(() => password = value)},
+                        onChanged: (value) => {setState(() => password = value)},
                         decoration: textInutDecoration.copyWith(
                           labelText: "Mật khẩu",
-                          prefix: Icon(
+                          suffix: Icon(
                             Icons.lock,
                             color: Theme.of(context).primaryColor,
                           ),
@@ -118,12 +111,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.only(top: 10, bottom: 10),
-                              backgroundColor: Theme.of(context).primaryColor,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20))),
+                            padding: const EdgeInsets.only(top: 10, bottom: 10),
+                            backgroundColor: Theme.of(context).primaryColor,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
                           onPressed: () => {register()},
                           child: const Text(
                             "Đăng ký",
@@ -135,13 +127,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       Text.rich(
                         TextSpan(
                           text: 'Đã có tài khoản?',
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 14),
+                          style: const TextStyle(color: Colors.black, fontSize: 14),
                           children: <TextSpan>[
                             TextSpan(
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  decoration: TextDecoration.underline),
+                              style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline),
                               text: ' Đăng nhập ở đây',
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
@@ -164,25 +153,23 @@ class _RegisterPageState extends State<RegisterPage> {
       setState(() {
         _isloading = true;
       });
-      await authentication
-          .register(fullname, email, password)
-          .then((value) async => {
-                if (value == true)
-                  {
-                    //Lưu dữ liệu vào shared preferences
-                    await Helper.saveUserLoggedInStatus(true),
-                    await Helper.saveUserName(fullname),
-                    await Helper.saveUserEmail(email),
-                    nextScreenReplace(context, const HomePage())
-                  }
-                else
-                  {
-                    showSnackBar(context, Colors.red, value),
-                    setState(() {
-                      _isloading = false;
-                    })
-                  }
-              });
+      await authentication.register(fullname, email, password).then((value) async => {
+            if (value == true)
+              {
+                //Lưu dữ liệu vào shared preferences
+                await Helper.saveUserLoggedInStatus(true),
+                await Helper.saveUserName(fullname),
+                await Helper.saveUserEmail(email),
+                nextScreenReplace(context, const HomePage())
+              }
+            else
+              {
+                showSnackBar(context, Colors.red, value),
+                setState(() {
+                  _isloading = false;
+                })
+              }
+          });
     }
   }
 }

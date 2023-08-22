@@ -8,13 +8,8 @@ class Authentication {
   // login
   Future login(String email, String password) async {
     try {
-      User user = (await firebaseAuth.signInWithEmailAndPassword(
-              email: email, password: password))
-          .user!;
-
-      if (user != null) {
-        return true;
-      }
+      User? user = (await firebaseAuth.signInWithEmailAndPassword(email: email, password: password)).user;
+      if (user != null) return true;
     } on FirebaseAuthException catch (e) {
       return e.message;
     }
@@ -23,10 +18,7 @@ class Authentication {
   // register
   Future register(String fullName, String email, String password) async {
     try {
-      User user = (await firebaseAuth.createUserWithEmailAndPassword(
-              email: email, password: password))
-          .user!;
-
+      User? user = (await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password)).user;
       if (user != null) {
         await Database(uid: user.uid).saveUser(fullName, email);
         return true;

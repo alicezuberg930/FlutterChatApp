@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class UserTile extends StatefulWidget {
@@ -8,20 +5,14 @@ class UserTile extends StatefulWidget {
   final String friendUid;
   final String friendName;
   final String friendAvatar;
-  const UserTile(
-      {Key? key,
-      required this.userName,
-      required this.friendUid,
-      required this.friendName,
-      required this.friendAvatar})
-      : super(key: key);
+  const UserTile({Key? key, required this.userName, required this.friendUid, required this.friendName, required this.friendAvatar}) : super(key: key);
 
   @override
   State<UserTile> createState() => _UserTileState();
 }
 
 class _UserTileState extends State<UserTile> {
-  StreamSubscription<DocumentSnapshot>? _documentStream;
+  // StreamSubscription<DocumentSnapshot>? _documentStream;
   String recentMessage = "";
 
   // @override
@@ -62,13 +53,11 @@ class _UserTileState extends State<UserTile> {
                 ),
           title: Text(
             widget.friendName,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black45),
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black45),
           ),
           subtitle: Text(
             recentMessage,
-            style: const TextStyle(
-                fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
           ),
         ),
       ),

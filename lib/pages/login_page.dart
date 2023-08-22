@@ -30,13 +30,11 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: _isloading
           ? Center(
-              child: CircularProgressIndicator(
-                  color: Theme.of(context).primaryColor),
+              child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
             )
           : SingleChildScrollView(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Form(
                   key: formkey,
                   child: Column(
@@ -45,16 +43,14 @@ class _LoginPageState extends State<LoginPage> {
                     children: <Widget>[
                       const Text(
                         "Tiến's Chat app",
-                        style: TextStyle(
-                            fontSize: 35, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(
                         height: 10,
                       ),
                       const Text(
                         'Đăng nhập ngay để nhắn tin với nhau',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w400),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(height: 25),
                       Image.asset(
@@ -73,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         decoration: textInutDecoration.copyWith(
                           labelText: "Email",
-                          prefix: Icon(
+                          suffix: Icon(
                             Icons.email,
                             color: Theme.of(context).primaryColor,
                           ),
@@ -81,33 +77,28 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 15),
                       TextFormField(
-                          obscureText: true,
-                          validator: (value) {
-                            if (value!.length < 6) {
-                              return "Mật khẩu phải có ít nhất 6 ký tự";
-                            } else {
-                              return null;
-                            }
-                          },
-                          onChanged: (value) =>
-                              {setState(() => password = value)},
-                          decoration: textInutDecoration.copyWith(
-                              labelText: "Password",
-                              prefix: Icon(
-                                Icons.lock,
-                                color: Theme.of(context).primaryColor,
-                              ))),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value!.length < 6) {
+                            return "Mật khẩu phải có ít nhất 6 ký tự";
+                          } else {
+                            return null;
+                          }
+                        },
+                        onChanged: (value) => {setState(() => password = value)},
+                        decoration: textInutDecoration.copyWith(
+                            labelText: "Password",
+                            suffix: Icon(
+                              Icons.lock,
+                              color: Theme.of(context).primaryColor,
+                            )),
+                      ),
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.only(top: 10, bottom: 10),
-                              backgroundColor: Theme.of(context).primaryColor,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20))),
+                              padding: const EdgeInsets.only(top: 10, bottom: 10), backgroundColor: Theme.of(context).primaryColor, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                           onPressed: () => {login()},
                           child: const Text(
                             "Đăng nhập",
@@ -119,13 +110,10 @@ class _LoginPageState extends State<LoginPage> {
                       Text.rich(
                         TextSpan(
                           text: 'Chưa có tài khoản?',
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 14),
+                          style: const TextStyle(color: Colors.black, fontSize: 14),
                           children: <TextSpan>[
                             TextSpan(
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  decoration: TextDecoration.underline),
+                              style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline),
                               text: 'Đăng ký ở đây',
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
@@ -150,14 +138,12 @@ class _LoginPageState extends State<LoginPage> {
       });
       await authentication.login(email, password).then((value) async {
         if (value == true) {
-          QuerySnapshot snapshot =
-              await Database(uid: FirebaseAuth.instance.currentUser!.uid)
-                  .getUserEmail(email);
+          QuerySnapshot snapshot = await Database(uid: FirebaseAuth.instance.currentUser!.uid).getUserEmail(email);
           await Helper.saveUserLoggedInStatus(true);
           await Helper.saveUserName(snapshot.docs[0]["fullName"]);
           await Helper.saveUserEmail(email);
           await Helper.saveUserAvatar(snapshot.docs[0]["profile_picture"]);
-          nextScreenReplace(context, const HomePage());
+          if (context.mounted) nextScreenReplace(context, const HomePage());
         } else {
           showSnackBar(context, Colors.red, value);
           setState(() {

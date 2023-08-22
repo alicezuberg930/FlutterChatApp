@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/helper/helper_function.dart';
 import 'package:flutter_chat_app/pages/chat_page.dart';
 import 'package:flutter_chat_app/service/database.dart';
-import 'package:flutter_chat_app/shared/gets.dart';
 import 'package:flutter_chat_app/widgets/form_input.dart';
 
 class SearchPage extends StatefulWidget {
@@ -39,8 +38,7 @@ class _SearchPageState extends State<SearchPage> {
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'Tìm kiếm',
-          style: TextStyle(
-              fontSize: 27, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: Column(
@@ -80,18 +78,16 @@ class _SearchPageState extends State<SearchPage> {
                     },
                     style: const TextStyle(color: Colors.white),
                     decoration: const InputDecoration(
-                        hintText: 'Nhập tên tìm kiếm',
-                        border: InputBorder.none,
-                        hintStyle:
-                            TextStyle(color: Colors.white, fontSize: 16)),
+                      hintText: 'Nhập tên tìm kiếm',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                 ),
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(40)),
+                  decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(40)),
                   child: const Icon(
                     Icons.search,
                     color: Colors.white,
@@ -104,8 +100,7 @@ class _SearchPageState extends State<SearchPage> {
               ? Container(
                   height: MediaQuery.of(context).size.height * 0.75,
                   alignment: Alignment.center,
-                  child: CircularProgressIndicator(
-                      color: Theme.of(context).primaryColor),
+                  child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                 )
               : SingleChildScrollView(
                   child: Column(
@@ -120,8 +115,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  groupTile(
-      String userName, String groupId, String groupName, String groupIcon) {
+  groupTile(String userName, String groupId, String groupName, String groupIcon) {
     checkUserJoined(userName, groupId, groupName);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -139,13 +133,12 @@ class _SearchPageState extends State<SearchPage> {
       ),
       trailing: InkWell(
         onTap: () async {
-          await Database(uid: user!.uid)
-              .toggleGroupJoin(groupId, groupName, userName);
+          await Database(uid: user!.uid).toggleGroupJoin(groupId, groupName, userName);
           if (_isJoined) {
             setState(() {
               _isJoined = !_isJoined;
             });
-            showSnackBar(context, Colors.green, 'Đã vào nhóm thành công');
+            if (context.mounted) showSnackBar(context, Colors.green, 'Đã vào nhóm thành công');
             Future.delayed(const Duration(seconds: 2), () {
               nextScreen(
                   context,
@@ -160,28 +153,21 @@ class _SearchPageState extends State<SearchPage> {
             setState(() {
               _isJoined = !_isJoined;
             });
-            showSnackBar(context, Colors.red, 'Bạn đã ở trong nhóm');
+            if (context.mounted) showSnackBar(context, Colors.red, 'Bạn đã ở trong nhóm');
           }
         },
         child: _isJoined
             ? Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.black,
-                    border: Border.all(color: Colors.white, width: 1)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.black, border: Border.all(color: Colors.white, width: 1)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: const Text(
                   "Đã vào",
                   style: TextStyle(color: Colors.white),
                 ),
               )
             : Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Theme.of(context).primaryColor),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Theme.of(context).primaryColor),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: const Text(
                   "Vào nhóm",
                   style: TextStyle(color: Colors.white),
@@ -191,8 +177,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  userTile(String userName, String strangerUid, String strangerName,
-      String strangerAvatar) {
+  userTile(String userName, String strangerUid, String strangerName, String strangerAvatar) {
     checkUserFriended(strangerUid);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -241,23 +226,16 @@ class _SearchPageState extends State<SearchPage> {
         },
         child: _isFriended
             ? Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.black,
-                    border: Border.all(color: Colors.white, width: 1)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.black, border: Border.all(color: Colors.white, width: 1)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: const Text(
                   "Đã kết bạn",
                   style: TextStyle(color: Colors.white),
                 ),
               )
             : Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Theme.of(context).primaryColor),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Theme.of(context).primaryColor),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: const Text(
                   "Thêm bạn",
                   style: TextStyle(color: Colors.white),
@@ -290,20 +268,14 @@ class _SearchPageState extends State<SearchPage> {
             shrinkWrap: true,
             itemCount: userSnapshot!.docs.length,
             itemBuilder: (context, index) {
-              return userTile(
-                  username!,
-                  userSnapshot!.docs[index]['uid'],
-                  userSnapshot!.docs[index]['fullName'],
-                  userSnapshot!.docs[index]['profile_picture']);
+              return userTile(username!, userSnapshot!.docs[index]['uid'], userSnapshot!.docs[index]['fullName'], userSnapshot!.docs[index]['profile_picture']);
             },
           )
         : const SizedBox(width: 0, height: 0);
   }
 
   checkUserJoined(String username, String groupId, String groupName) async {
-    await Database(uid: user!.uid)
-        .isUserJoined(groupName, groupId, username)
-        .then((value) {
+    await Database(uid: user!.uid).isUserJoined(groupName, groupId, username).then((value) {
       setState(() {
         _isJoined = value;
       });

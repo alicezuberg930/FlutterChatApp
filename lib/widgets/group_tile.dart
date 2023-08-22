@@ -11,13 +11,7 @@ class GroupTile extends StatefulWidget {
   final String groupId;
   final String groupName;
   final String groupAvatar;
-  const GroupTile(
-      {Key? key,
-      required this.userName,
-      required this.groupId,
-      required this.groupName,
-      required this.groupAvatar})
-      : super(key: key);
+  const GroupTile({Key? key, required this.userName, required this.groupId, required this.groupName, required this.groupAvatar}) : super(key: key);
 
   @override
   State<GroupTile> createState() => _GroupTileState();
@@ -28,9 +22,7 @@ class _GroupTileState extends State<GroupTile> {
   String recentMessage = "";
   @override
   void initState() {
-    Database()
-        .getGroupRecentMessage(widget.groupId)
-        .then((value) => {recentMessage = value});
+    Database().getGroupRecentMessage(widget.groupId).then((value) => {recentMessage = value});
     listenForDocumentChange(widget.groupId);
     super.initState();
   }
@@ -42,11 +34,7 @@ class _GroupTileState extends State<GroupTile> {
   }
 
   listenForDocumentChange(String documentId) {
-    _documentStream = FirebaseFirestore.instance
-        .collection('groups')
-        .doc(documentId)
-        .snapshots()
-        .listen((documentSnapshot) {
+    _documentStream = FirebaseFirestore.instance.collection('groups').doc(documentId).snapshots().listen((documentSnapshot) {
       var myData = documentSnapshot.data();
       setState(() {
         recentMessage = myData!['recentMessage'];
@@ -91,13 +79,11 @@ class _GroupTileState extends State<GroupTile> {
                 ),
           title: Text(
             widget.groupName,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black45),
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black45),
           ),
           subtitle: Text(
-            recentMessage,
-            style: const TextStyle(
-                fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
+            recentMessage.contains("https://firebasestorage.googleapis.com/v0/b/flutterchatapp-6c211.appspot.com/o/") ? "Ảnh" : recentMessage,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
           ),
         ),
       ),
