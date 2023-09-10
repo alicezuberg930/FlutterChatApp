@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/scroll_behavior.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/helper/helper_function.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
@@ -14,21 +16,22 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  bool _isloading = false;
   String email = "";
   String password = "";
   String fullname = "";
   Authentication authentication = Authentication();
   final formkey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
-      body: _isloading
-          ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
-          : SingleChildScrollView(
+      body: SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          alignment: Alignment.center,
+          child: ScrollConfiguration(
+            behavior: RemoveGlowingBehavior(),
+            child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Form(
@@ -37,10 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        "Tiến's Chat app",
-                        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
-                      ),
+                      const Text("Tiến's Chat app", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 10),
                       const Text(
                         'Đăng ký ngay để tạo tài khoản mới',
@@ -49,7 +49,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 25),
                       Image.asset(
                         "./assets/images/login_background.png",
-                        width: MediaQuery.of(context).size.width * 0.65,
+                        width: MediaQuery.of(context).size.width * 0.6,
                       ),
                       const SizedBox(height: 25),
                       TextFormField(
@@ -63,10 +63,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                         decoration: textInutDecoration.copyWith(
                           labelText: "Tên đầy đủ",
-                          suffix: Icon(
-                            Icons.person,
-                            color: Theme.of(context).primaryColor,
-                          ),
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -81,10 +77,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                         decoration: textInutDecoration.copyWith(
                           labelText: "Email",
-                          suffix: Icon(
-                            Icons.email,
-                            color: Theme.of(context).primaryColor,
-                          ),
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -100,10 +92,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         onChanged: (value) => {setState(() => password = value)},
                         decoration: textInutDecoration.copyWith(
                           labelText: "Mật khẩu",
-                          suffix: Icon(
-                            Icons.lock,
-                            color: Theme.of(context).primaryColor,
-                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -132,10 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             TextSpan(
                               style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline),
                               text: ' Đăng nhập ở đây',
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  nextScreen(context, const LoginPage());
-                                },
+                              recognizer: TapGestureRecognizer()..onTap = () => UIHelpers.nextScreen(context, const LoginPage()),
                             ),
                           ],
                         ),
@@ -145,31 +130,24 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
             ),
+          ),
+        ),
+      ),
     );
   }
 
   register() async {
     if (formkey.currentState!.validate()) {
-      setState(() {
-        _isloading = true;
+      await authentication.register(fullname, email, password).then((value) async {
+        if (value == true) {
+          await Helper.saveUserLoggedInStatus(true);
+          await Helper.saveUserName(fullname);
+          await Helper.saveUserEmail(email);
+          if (context.mounted) UIHelpers.nextScreenReplace(context, const HomePage());
+        } else {
+          UIHelpers.showSnackBar(context, Colors.red, value);
+        }
       });
-      await authentication.register(fullname, email, password).then((value) async => {
-            if (value == true)
-              {
-                //Lưu dữ liệu vào shared preferences
-                await Helper.saveUserLoggedInStatus(true),
-                await Helper.saveUserName(fullname),
-                await Helper.saveUserEmail(email),
-                nextScreenReplace(context, const HomePage())
-              }
-            else
-              {
-                showSnackBar(context, Colors.red, value),
-                setState(() {
-                  _isloading = false;
-                })
-              }
-          });
     }
   }
 }

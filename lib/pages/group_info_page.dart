@@ -1,23 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/shared/gets.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
 
 class GroupInfoPage extends StatefulWidget {
   final String groupId;
   final String groupName;
   final String adminName;
   final String groupAvatar;
-  const GroupInfoPage(
-      {Key? key,
-      required this.groupId,
-      required this.groupName,
-      required this.adminName,
-      required this.groupAvatar})
-      : super(key: key);
+  const GroupInfoPage({Key? key, required this.groupId, required this.groupName, required this.adminName, required this.groupAvatar}) : super(key: key);
 
   @override
   State<GroupInfoPage> createState() => _GroupInfoPageState();
@@ -59,11 +53,8 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                       ),
                       IconButton(
                         onPressed: () async {
-                          Database(uid: FirebaseAuth.instance.currentUser!.uid)
-                              .toggleGroupJoin(widget.groupId, widget.groupName,
-                                  getName(widget.adminName))
-                              .whenComplete(() {
-                            nextScreenReplace(context, const HomePage());
+                          Database(uid: FirebaseAuth.instance.currentUser!.uid).toggleGroupJoin(widget.groupId, widget.groupName, getName(widget.adminName)).whenComplete(() {
+                            UIHelpers.nextScreenReplace(context, const HomePage());
                           });
                         },
                         icon: const Icon(Icons.done, color: Colors.green),
@@ -101,9 +92,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                           backgroundColor: Theme.of(context).primaryColor,
                           child: Text(
                             widget.groupName.substring(0, 1).toUpperCase(),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white),
+                            style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
                           ),
                         ),
                   const SizedBox(height: 20),
@@ -140,20 +129,14 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
                   return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                     child: ListTile(
                       leading: CircleAvatar(
                         radius: 30,
                         backgroundColor: Theme.of(context).primaryColor,
                         child: Text(
-                          getName(snapshot.data['members'][index])
-                              .substring(0, 1)
-                              .toUpperCase(),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold),
+                          getName(snapshot.data['members'][index]).substring(0, 1).toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
                       title: Text(getName(snapshot.data['members'][index])),
@@ -164,20 +147,17 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
               );
             } else {
               return Center(
-                child: CircularProgressIndicator(
-                    color: Theme.of(context).primaryColor),
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
               );
             }
           } else {
             return Center(
-              child: CircularProgressIndicator(
-                  color: Theme.of(context).primaryColor),
+              child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
             );
           }
         } else {
           return Center(
-            child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor),
+            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
           );
         }
       },
@@ -185,9 +165,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
   }
 
   getGroupMembers() async {
-    Database(uid: FirebaseAuth.instance.currentUser!.uid)
-        .getGroupMembers(widget.groupId)
-        .then((value) {
+    Database(uid: FirebaseAuth.instance.currentUser!.uid).getGroupMembers(widget.groupId).then((value) {
       setState(() {
         members = value;
       });

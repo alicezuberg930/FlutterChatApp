@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/pages/chat_page.dart';
 import 'package:flutter_chat_app/service/database.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
 
 class GroupTile extends StatefulWidget {
   final String userName;
@@ -46,7 +46,7 @@ class _GroupTileState extends State<GroupTile> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        nextScreen(
+        UIHelpers.nextScreen(
           context,
           ChatPage(
             groupId: widget.groupId,

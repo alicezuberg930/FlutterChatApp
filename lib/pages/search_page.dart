@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/helper/helper_function.dart';
 import 'package:flutter_chat_app/pages/chat_page.dart';
 import 'package:flutter_chat_app/service/database.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -138,22 +138,23 @@ class _SearchPageState extends State<SearchPage> {
             setState(() {
               _isJoined = !_isJoined;
             });
-            if (context.mounted) showSnackBar(context, Colors.green, 'Đã vào nhóm thành công');
+            if (context.mounted) UIHelpers.showSnackBar(context, Colors.green, 'Đã vào nhóm thành công');
             Future.delayed(const Duration(seconds: 2), () {
-              nextScreen(
-                  context,
-                  ChatPage(
-                    groupId: groupId,
-                    groupName: groupName,
-                    userName: userName,
-                    groupAvatar: groupIcon,
-                  ));
+              UIHelpers.nextScreen(
+                context,
+                ChatPage(
+                  groupId: groupId,
+                  groupName: groupName,
+                  userName: userName,
+                  groupAvatar: groupIcon,
+                ),
+              );
             });
           } else {
             setState(() {
               _isJoined = !_isJoined;
             });
-            if (context.mounted) showSnackBar(context, Colors.red, 'Bạn đã ở trong nhóm');
+            if (context.mounted) UIHelpers.showSnackBar(context, Colors.red, 'Bạn đã ở trong nhóm');
           }
         },
         child: _isJoined

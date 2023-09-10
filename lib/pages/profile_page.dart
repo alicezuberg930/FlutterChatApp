@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_app/pages/home_page.dart';
-import 'package:flutter_chat_app/pages/login_page.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
 
 class ProfilePage extends StatefulWidget {

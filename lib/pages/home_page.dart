@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/helper/helper_function.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/pages/profile_page.dart';
@@ -9,7 +10,6 @@ import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/service/file_firebase.dart';
 import 'package:flutter_chat_app/shared/gets.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
 import 'package:flutter_chat_app/widgets/group_tile.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
 import 'package:flutter_chat_app/widgets/user_tile.dart';
@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             onPressed: () {
-              nextScreen(context, const SearchPage());
+              UIHelpers.nextScreen(context, const SearchPage());
             },
             icon: const Icon(Icons.search),
           )
@@ -215,7 +215,7 @@ class _HomePageState extends State<HomePage> {
                       });
                       Database(uid: FirebaseAuth.instance.currentUser!.uid).createGroup(userName!, FirebaseAuth.instance.currentUser!.uid, groupName!).whenComplete(() => _isloading = false);
                       Navigator.of(context).pop();
-                      showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
+                      UIHelpers.showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
                     }
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
@@ -285,7 +285,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   cropImage(String path) async {
-    List<CropAspectRatioPreset> androidPreset = [CropAspectRatioPreset.square, CropAspectRatioPreset.ratio3x2, CropAspectRatioPreset.original, CropAspectRatioPreset.ratio4x3, CropAspectRatioPreset.ratio16x9];
+    List<CropAspectRatioPreset> androidPreset = [
+      CropAspectRatioPreset.square,
+      CropAspectRatioPreset.ratio3x2,
+      CropAspectRatioPreset.original,
+      CropAspectRatioPreset.ratio4x3,
+      CropAspectRatioPreset.ratio16x9
+    ];
     final croppedImage = await ImageCropper().cropImage(
       sourcePath: path,
       aspectRatioPresets: Platform.isAndroid
@@ -302,7 +308,8 @@ class _HomePageState extends State<HomePage> {
                 CropAspectRatioPreset.ratio7x5,
               ],
       uiSettings: [
-        AndroidUiSettings(toolbarTitle: "Cắt ảnh", toolbarColor: Theme.of(context).primaryColor, toolbarWidgetColor: Colors.white, initAspectRatio: CropAspectRatioPreset.original, lockAspectRatio: false),
+        AndroidUiSettings(
+            toolbarTitle: "Cắt ảnh", toolbarColor: Theme.of(context).primaryColor, toolbarWidgetColor: Colors.white, initAspectRatio: CropAspectRatioPreset.original, lockAspectRatio: false),
         IOSUiSettings(
           title: "Cắt ảnh",
         )
@@ -383,7 +390,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ListTile(
-            onTap: () => {nextScreen(context, ProfilePage(username: userName!, email: email!))},
+            onTap: () => {UIHelpers.nextScreen(context, ProfilePage(username: userName!, email: email!))},
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.verified_user),
             title: const Text(
@@ -411,7 +418,7 @@ class _HomePageState extends State<HomePage> {
                       GestureDetector(
                         onTap: () async {
                           authentication.signOut();
-                          nextScreenReplace(context, const LoginPage());
+                          UIHelpers.nextScreenReplace(context, const LoginPage());
                         },
                         child: const Text("Có"),
                       ),

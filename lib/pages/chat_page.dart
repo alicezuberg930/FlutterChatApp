@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/pages/group_info_page.dart';
 import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/service/file_firebase.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
 import 'package:image_picker/image_picker.dart';
@@ -43,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: [
           IconButton(
             onPressed: () {
-              nextScreen(
+              UIHelpers.nextScreen(
                 context,
                 GroupInfoPage(
                   groupId: widget.groupId,
