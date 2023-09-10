@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
-import 'package:flutter_chat_app/helper/helper_function.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/pages/chat_page.dart';
 import 'package:flutter_chat_app/service/database.dart';
 

@@ -2,12 +2,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
-import 'package:flutter_chat_app/helper/helper_function.dart';
-import 'package:flutter_chat_app/pages/home_page.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
+import 'package:flutter_chat_app/common/form_input.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -23,10 +23,16 @@ class _RegisterPageState extends State<RegisterPage> {
   final formkey = GlobalKey<FormState>();
 
   @override
+  void dispose() {
+    Loader.hide();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
+    return SafeArea(
+      child: Scaffold(
+        body: Container(
           height: MediaQuery.of(context).size.height,
           alignment: Alignment.center,
           child: ScrollConfiguration(
@@ -138,13 +144,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
   register() async {
     if (formkey.currentState!.validate()) {
+      Loader.show(context, progressIndicator: const CircularProgressIndicator());
       await authentication.register(fullname, email, password).then((value) async {
         if (value == true) {
           await Helper.saveUserLoggedInStatus(true);
           await Helper.saveUserName(fullname);
           await Helper.saveUserEmail(email);
-          if (context.mounted) UIHelpers.nextScreenReplace(context, const HomePage());
+          Loader.hide();
+          if (context.mounted) UIHelpers.nextScreenReplace(context, const LoginPage());
         } else {
+          Loader.hide();
           UIHelpers.showSnackBar(context, Colors.red, value);
         }
       });

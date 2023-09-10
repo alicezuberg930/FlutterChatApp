@@ -1,4 +1,4 @@
-import 'package:flutter_chat_app/helper/helper_function.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/service/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

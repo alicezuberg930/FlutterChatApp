@@ -8,14 +8,15 @@ const textInutDecoration = InputDecoration(
   contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
   labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w300),
   // focusedBorder: OutlineInputBorder(
-  //   borderSide: BorderSide(color: Colors.orange, width: 1),
+  //   borderRadius: BorderRadius.all(Radius.circular(15)),
+  //   borderSide: BorderSide(color: Colors.blue),
   // ),
-  // enabledBorder: OutlineInputBorder(
-  //   borderSide: BorderSide(color: Colors.orange, width: 1),
-  // ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.all(Radius.circular(15)),
+    borderSide: BorderSide(color: Colors.blue),
+  ),
   errorBorder: OutlineInputBorder(
-    borderSide: BorderSide(color: Colors.orange, width: 1),
+    borderRadius: BorderRadius.all(Radius.circular(15)),
+    borderSide: BorderSide(color: Colors.red, width: 1),
   ),
 );
-
-

@@ -4,13 +4,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
-import 'package:flutter_chat_app/helper/helper_function.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/register_page.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
-import 'package:flutter_chat_app/widgets/form_input.dart';
+import 'package:flutter_chat_app/common/form_input.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -26,10 +27,16 @@ class _LoginPageState extends State<LoginPage> {
   Authentication authentication = Authentication();
 
   @override
+  void dispose() {
+    Loader.hide();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
+    return SafeArea(
+      child: Scaffold(
+        body: Container(
           height: MediaQuery.of(context).size.height,
           alignment: Alignment.center,
           child: ScrollConfiguration(
@@ -96,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
-                          onPressed: () => {login()},
+                          onPressed: () => login(),
                           child: const Text("Đăng nhập", style: TextStyle(color: Colors.white, fontSize: 16)),
                         ),
                       ),
@@ -127,6 +134,7 @@ class _LoginPageState extends State<LoginPage> {
 
   login() async {
     if (formkey.currentState!.validate()) {
+      Loader.show(context, progressIndicator: const CircularProgressIndicator());
       await authentication.login(email, password).then((value) async {
         if (value == true) {
           QuerySnapshot snapshot = await Database(uid: FirebaseAuth.instance.currentUser!.uid).getUserEmail(email);
@@ -134,7 +142,11 @@ class _LoginPageState extends State<LoginPage> {
           await Helper.saveUserName(snapshot.docs[0]["fullName"]);
           await Helper.saveUserEmail(email);
           await Helper.saveUserAvatar(snapshot.docs[0]["profile_picture"]);
+          Loader.hide();
           if (context.mounted) UIHelpers.nextScreenReplace(context, const HomePage());
+        } else {
+          Loader.hide();
+          UIHelpers.showSnackBar(context, Colors.red, value);
         }
       });
     }

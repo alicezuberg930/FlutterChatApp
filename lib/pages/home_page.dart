@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
-import 'package:flutter_chat_app/helper/helper_function.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/pages/profile_page.dart';
 import 'package:flutter_chat_app/pages/search_page.dart';
@@ -44,40 +44,40 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            onPressed: () {
-              UIHelpers.nextScreen(context, const SearchPage());
-            },
-            icon: const Icon(Icons.search),
-          )
-        ],
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "Tiến's Messenger",
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
-      drawer: customDrawerWidget(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => {popUpDiolog(context)},
-        elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            avatarListWidget(),
-            groupListWidget(),
-            // userListWidget(),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              onPressed: () => UIHelpers.nextScreen(context, const SearchPage()),
+              icon: const Icon(Icons.search),
+            )
           ],
+          elevation: 0,
+          centerTitle: true,
+          title: const Text(
+            "Tiến's Messenger",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).primaryColor,
+        ),
+        drawer: customDrawerWidget(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => {popUpDiolog(context)},
+          elevation: 0,
+          backgroundColor: Theme.of(context).primaryColor,
+          child: const Icon(Icons.add, color: Colors.white, size: 30),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              avatarListWidget(),
+              groupListWidget(),
+              // userListWidget(),
+            ],
+          ),
         ),
       ),
     );
@@ -204,7 +204,10 @@ class _HomePageState extends State<HomePage> {
               actions: [
                 ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.all(10),
+                  ),
                   child: const Text('Hủy'),
                 ),
                 ElevatedButton(
@@ -218,7 +221,10 @@ class _HomePageState extends State<HomePage> {
                       UIHelpers.showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
                     }
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.all(10),
+                  ),
                   child: const Text('Tạo'),
                 )
               ],
@@ -405,22 +411,38 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text(
-                      "Đăng xuất",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    elevation: 5,
+                    title: Row(
+                      children: const [
+                        Icon(Icons.warning),
+                        SizedBox(width: 5),
+                        Text(
+                          "Đăng xuất",
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                     content: const Text("Bạn có chắc chắn đăng xuất?"),
                     actions: [
                       GestureDetector(
-                        onTap: () => {Navigator.pop(context)},
-                        child: const Text("Không"),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(10)),
+                          onPressed: () => {Navigator.pop(context)},
+                          child: const Text("Không"),
+                        ),
                       ),
                       GestureDetector(
-                        onTap: () async {
-                          authentication.signOut();
-                          UIHelpers.nextScreenReplace(context, const LoginPage());
-                        },
-                        child: const Text("Có"),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(10),
+                            backgroundColor: Colors.yellow[700],
+                          ),
+                          onPressed: () async {
+                            authentication.signOut();
+                            UIHelpers.nextScreenReplace(context, const LoginPage());
+                          },
+                          child: const Text("Có"),
+                        ),
                       ),
                     ],
                   );
@@ -433,7 +455,16 @@ class _HomePageState extends State<HomePage> {
               "Đăng xuất",
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
-          )
+          ),
+          ListTile(
+            onTap: () => {UIHelpers.nextScreen(context, ProfilePage(username: userName!, email: email!))},
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+            leading: const Icon(Icons.settings),
+            title: const Text(
+              "Cài đặt",
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+          ),
         ],
       ),
     );
