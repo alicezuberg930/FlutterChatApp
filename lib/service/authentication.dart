@@ -28,9 +28,7 @@ class Authentication {
 
   signOut() async {
     try {
-      await Helper.saveUserLoggedInStatus(false);
-      await Helper.saveUserEmail("");
-      await Helper.saveUserName("");
+      SharedPreference.clearAllData();
       await firebaseAuth.signOut();
     } catch (e) {
       return null;

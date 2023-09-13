@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/common/form_input.dart';
@@ -147,11 +148,11 @@ class _RegisterPageState extends State<RegisterPage> {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
       await authentication.register(fullname, email, password).then((value) async {
         if (value == true) {
-          await Helper.saveUserLoggedInStatus(true);
-          await Helper.saveUserName(fullname);
-          await Helper.saveUserEmail(email);
+          SharedPreference.saveUserLoggedInStatus(true);
+          SharedPreference.saveUserName(fullname);
+          SharedPreference.saveUserEmail(email);
           Loader.hide();
-          if (context.mounted) UIHelpers.nextScreenReplace(context, const LoginPage());
+          if (context.mounted) UIHelpers.nextScreenReplace(context, const HomePage());
         } else {
           Loader.hide();
           UIHelpers.showSnackBar(context, Colors.red, value);

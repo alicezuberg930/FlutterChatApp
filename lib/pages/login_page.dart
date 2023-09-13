@@ -138,10 +138,10 @@ class _LoginPageState extends State<LoginPage> {
       await authentication.login(email, password).then((value) async {
         if (value == true) {
           QuerySnapshot snapshot = await Database(uid: FirebaseAuth.instance.currentUser!.uid).getUserEmail(email);
-          await Helper.saveUserLoggedInStatus(true);
-          await Helper.saveUserName(snapshot.docs[0]["fullName"]);
-          await Helper.saveUserEmail(email);
-          await Helper.saveUserAvatar(snapshot.docs[0]["profile_picture"]);
+          SharedPreference.saveUserLoggedInStatus(true);
+          SharedPreference.saveUserName(snapshot.docs[0]["fullName"]);
+          SharedPreference.saveUserEmail(email);
+          SharedPreference.saveUserAvatar(snapshot.docs[0]["profile_picture"]);
           Loader.hide();
           if (context.mounted) UIHelpers.nextScreenReplace(context, const HomePage());
         } else {

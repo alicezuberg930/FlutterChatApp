@@ -260,9 +260,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   getUserData() async {
-    await Helper.getUserName().then((value) => {userName = value!});
-    await Helper.getUserEmail().then((value) => {email = value!});
-    await Helper.getUserAvatar().then((value) => {avatar = value!});
+    userName = SharedPreference.getUserName();
+    email = SharedPreference.getUserEmail();
+    avatar = SharedPreference.getUserAvatar();
     await Database(uid: FirebaseAuth.instance.currentUser!.uid).getUserMetaData().then((snapshots) {
       setState(() {
         userMetaData = snapshots;

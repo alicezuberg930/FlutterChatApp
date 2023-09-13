@@ -8,6 +8,7 @@ import 'package:flutter_chat_app/shared/constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SharedPreference.initPref();
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
@@ -34,16 +35,8 @@ class _MyChatAppState extends State<MyChatApp> {
   bool isSignedIn = false;
   @override
   void initState() {
-    getUserLoggedInStatus();
+    isSignedIn = SharedPreference.getUserLoggedInStatus();
     super.initState();
-  }
-
-  getUserLoggedInStatus() async {
-    await Helper.getUserLoggedInStatus().then(
-      (value) => {
-        if (value != null) {isSignedIn = value}
-      },
-    );
   }
 
   @override
