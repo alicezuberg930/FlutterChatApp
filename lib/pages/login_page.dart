@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
@@ -5,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/register_page.dart';
+import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
@@ -56,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'Đăng nhập ngay để nhắn tin với nhau',
+                        'Login now to message each other',
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(height: 25),
@@ -69,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                         onChanged: (value) => {setState(() => email = value)},
                         validator: (value) {
                           if (emailValidator(value!) == false) {
-                            return "Email không đúng định dạng";
+                            return "Email format is incorrect";
                           } else {
                             return null;
                           }
@@ -83,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                         obscureText: true,
                         validator: (value) {
                           if (value!.length < 6) {
-                            return "Mật khẩu phải có ít nhất 6 ký tự";
+                            return "Password need to have at least 6 characters";
                           } else {
                             return null;
                           }
@@ -104,18 +108,18 @@ class _LoginPageState extends State<LoginPage> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
                           onPressed: () => login(),
-                          child: const Text("Đăng nhập", style: TextStyle(color: Colors.white, fontSize: 16)),
+                          child: const Text("Login", style: TextStyle(color: Colors.white, fontSize: 16)),
                         ),
                       ),
                       const SizedBox(height: 10),
                       Text.rich(
                         TextSpan(
-                          text: 'Chưa có tài khoản? ',
+                          text: "Don't have an account? ",
                           style: const TextStyle(color: Colors.black, fontSize: 14),
                           children: <TextSpan>[
                             TextSpan(
                               style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline),
-                              text: 'Đăng ký ở đây',
+                              text: 'Register here',
                               recognizer: TapGestureRecognizer()..onTap = () => UIHelpers.nextScreen(context, const RegisterPage()),
                             ),
                           ],
@@ -135,19 +139,21 @@ class _LoginPageState extends State<LoginPage> {
   login() async {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
-      await authentication.login(email, password).then((value) async {
-        if (value == true) {
-          QuerySnapshot snapshot = await Database(uid: FirebaseAuth.instance.currentUser!.uid).getUserEmail(email);
-          SharedPreference.saveUserLoggedInStatus(true);
-          SharedPreference.saveUserName(snapshot.docs[0]["fullName"]);
-          SharedPreference.saveUserEmail(email);
-          SharedPreference.saveUserAvatar(snapshot.docs[0]["profile_picture"]);
-          Loader.hide();
-          if (context.mounted) UIHelpers.nextScreenReplace(context, const HomePage());
+      APIService.login({'email': email, 'password': password}).then((value) {
+        if (value != null) {
+          ChatUser user = value;
+          if (user.status == "success") {
+            UIHelpers.showSnackBar(context, Colors.green, user.message);
+            SharedPreference.saveUserData(jsonEncode(user));
+            Future.delayed(const Duration(seconds: 2));
+            UIHelpers.nextScreenReplace(context, HomePage(user: user));
+          } else {
+            UIHelpers.showSnackBar(context, Colors.red, user.message);
+          }
         } else {
-          Loader.hide();
-          UIHelpers.showSnackBar(context, Colors.red, value);
+          UIHelpers.showSnackBar(context, Colors.red, "unidentified problem occurred");
         }
+        Loader.hide();
       });
     }
   }

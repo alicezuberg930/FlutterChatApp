@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/model/user.dart';
+import 'package:flutter_chat_app/pages/chat_page.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
+import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/common/form_input.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
@@ -146,17 +151,21 @@ class _RegisterPageState extends State<RegisterPage> {
   register() async {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
-      await authentication.register(fullname, email, password).then((value) async {
-        if (value == true) {
-          SharedPreference.saveUserLoggedInStatus(true);
-          SharedPreference.saveUserName(fullname);
-          SharedPreference.saveUserEmail(email);
-          Loader.hide();
-          if (context.mounted) UIHelpers.nextScreenReplace(context, const HomePage());
+      await APIService.register({"fullname": fullname, "email": email, "password": password}).then((value) async {
+        if (value != null) {
+          ChatUser user = value;
+          if (user.status == "success") {
+            UIHelpers.showSnackBar(context, Colors.green, user.message);
+            SharedPreference.saveUserData(jsonEncode(user));
+            Future.delayed(const Duration(seconds: 2));
+            UIHelpers.nextScreenReplace(context, HomePage(user: user));
+          } else {
+            UIHelpers.showSnackBar(context, Colors.red, user.message);
+          }
         } else {
-          Loader.hide();
           UIHelpers.showSnackBar(context, Colors.red, value);
         }
+        Loader.hide();
       });
     }
   }

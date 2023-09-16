@@ -3,9 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/pages/profile_page.dart';
 import 'package:flutter_chat_app/pages/search_page.dart';
+import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/service/file_firebase.dart';
@@ -17,13 +19,13 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final ChatUser user;
+  const HomePage({Key? key, required this.user}) : super(key: key);
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  Authentication authentication = Authentication();
   ImagePicker picker = ImagePicker();
   File? userAvatar;
   String? userName;
@@ -39,7 +41,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    getUserData();
   }
 
   @override
@@ -73,8 +74,8 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              avatarListWidget(),
-              groupListWidget(),
+              // avatarListWidget(),
+              // groupListWidget(),
               // userListWidget(),
             ],
           ),
@@ -270,65 +271,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  chooseImage(ImageSource src) async {
-    await picker.pickImage(source: src, imageQuality: 100).then(
-          (value) => {
-            if (value != null)
-              {
-                cropImage(value.path).then((value) {
-                  FileFirebase().uploadImage(userAvatar!, "avatar").then(
-                    (value) {
-                      setState(
-                        () => avatar = value,
-                      );
-                      Database(uid: FirebaseAuth.instance.currentUser!.uid).updateAvatar(value);
-                    },
-                  );
-                }),
-              }
-          },
-        );
-  }
-
-  cropImage(String path) async {
-    List<CropAspectRatioPreset> androidPreset = [
-      CropAspectRatioPreset.square,
-      CropAspectRatioPreset.ratio3x2,
-      CropAspectRatioPreset.original,
-      CropAspectRatioPreset.ratio4x3,
-      CropAspectRatioPreset.ratio16x9
-    ];
-    final croppedImage = await ImageCropper().cropImage(
-      sourcePath: path,
-      aspectRatioPresets: Platform.isAndroid
-          ? androidPreset
-          : androidPreset +
-              [
-                CropAspectRatioPreset.square,
-                CropAspectRatioPreset.ratio3x2,
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.ratio4x3,
-                CropAspectRatioPreset.ratio16x9,
-                CropAspectRatioPreset.ratio5x3,
-                CropAspectRatioPreset.ratio5x4,
-                CropAspectRatioPreset.ratio7x5,
-              ],
-      uiSettings: [
-        AndroidUiSettings(
-            toolbarTitle: "Cắt ảnh", toolbarColor: Theme.of(context).primaryColor, toolbarWidgetColor: Colors.white, initAspectRatio: CropAspectRatioPreset.original, lockAspectRatio: false),
-        IOSUiSettings(
-          title: "Cắt ảnh",
-        )
-      ],
-    );
-    if (croppedImage != null) {
-      imageCache.clear();
-      setState(() {
-        userAvatar = File(croppedImage.path);
-      });
-    }
-  }
-
   customDrawerWidget() {
     return Drawer(
       child: ListView(
@@ -342,7 +284,7 @@ class _HomePageState extends State<HomePage> {
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(100),
                         child: Image(
-                          image: NetworkImage(avatar!),
+                          image: NetworkImage(widget.user.data!.avatar!),
                           height: 150,
                           width: 150,
                           fit: BoxFit.cover,
@@ -368,7 +310,7 @@ class _HomePageState extends State<HomePage> {
                       child: const Icon(
                         Icons.camera_alt,
                         color: Colors.black,
-                        size: 24.0,
+                        size: 24,
                       ),
                     ),
                   ),
@@ -378,7 +320,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 15),
           Text(
-            userName!,
+            widget.user.data!.name!,
             textAlign: TextAlign.center,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
@@ -438,7 +380,8 @@ class _HomePageState extends State<HomePage> {
                             backgroundColor: Colors.yellow[700],
                           ),
                           onPressed: () async {
-                            authentication.signOut();
+                            // authentication.signOut();
+                            SharedPreference.clearAllData();
                             UIHelpers.nextScreenReplace(context, const LoginPage());
                           },
                           child: const Text("Có"),
@@ -505,5 +448,68 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  chooseImage(ImageSource src) async {
+    await picker.pickImage(source: src, imageQuality: 100).then(
+      (value) async {
+        if (value != null) {
+          await cropImage(value.path);
+        }
+      },
+    );
+  }
+
+  Future cropImage(String path) async {
+    List<CropAspectRatioPreset> androidPreset = [
+      CropAspectRatioPreset.square,
+      CropAspectRatioPreset.ratio3x2,
+      CropAspectRatioPreset.original,
+      CropAspectRatioPreset.ratio4x3,
+      CropAspectRatioPreset.ratio16x9
+    ];
+    final croppedImage = await ImageCropper().cropImage(
+      sourcePath: path,
+      aspectRatioPresets: Platform.isAndroid
+          ? androidPreset
+          : androidPreset +
+              [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9,
+                CropAspectRatioPreset.ratio5x3,
+                CropAspectRatioPreset.ratio5x4,
+                CropAspectRatioPreset.ratio7x5,
+              ],
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: "Cắt ảnh",
+          toolbarColor: Theme.of(context).primaryColor,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+        ),
+        IOSUiSettings(title: "Cắt ảnh")
+      ],
+    );
+    if (croppedImage != null) {
+      imageCache.clear();
+      APIService.updateUserAvatar(croppedImage.path, widget.user.data!.id!).then((value) {
+        if (value != null) {
+          ChatUser user = value;
+          if (user.status == "success") {
+            setState(() {
+              widget.user.data!.avatar = user.data!.avatar;
+            });
+          } else {
+            UIHelpers.showSnackBar(context, Colors.red, user.message);
+          }
+        } else {
+          UIHelpers.showSnackBar(context, Colors.red, "unidentified problem occurred");
+        }
+      });
+    }
   }
 }

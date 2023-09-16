@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
@@ -33,9 +34,12 @@ class MyChatApp extends StatefulWidget {
 
 class _MyChatAppState extends State<MyChatApp> {
   bool isSignedIn = false;
+  ChatUser? userData;
+
   @override
   void initState() {
-    isSignedIn = SharedPreference.getUserLoggedInStatus();
+    userData = SharedPreference.getUserData();
+    if (userData != null) isSignedIn = true;
     super.initState();
   }
 
@@ -47,7 +51,7 @@ class _MyChatAppState extends State<MyChatApp> {
         primaryColor: Constants.primaryColor,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: isSignedIn ? const HomePage() : const LoginPage(),
+      home: isSignedIn ? HomePage(user: userData!) : const LoginPage(),
     );
   }
 }
