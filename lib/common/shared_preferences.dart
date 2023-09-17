@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,22 +38,6 @@ class SharedPreference {
   }
 
   //Đọc dữ liệu từ shared preferences
-  static getUserLoggedInStatus() {
-    return pref.getBool(userloggedinKeys) ?? false;
-  }
-
-  static getUserName() {
-    return pref.getString(usernameKey);
-  }
-
-  static getUserEmail() {
-    return pref.getString(useremailKey);
-  }
-
-  static getUserAvatar() {
-    return pref.getString(avatarKey);
-  }
-
   static clearAllData() async {
     await pref.clear();
   }

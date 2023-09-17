@@ -27,12 +27,14 @@ class ChatUserData {
   String? name;
   String? email;
   String? avatar;
+  String? status;
 
   ChatUserData({
     this.name,
     this.id,
     this.email,
     this.avatar,
+    this.status,
   });
 
   factory ChatUserData.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class ChatUserData {
       id: json['id'].toString(),
       email: json['email'],
       avatar: json['avatar'],
+      status: json['status'].toString(),
     );
   }
 
@@ -50,6 +53,7 @@ class ChatUserData {
       'id': id.toString(),
       'email': email,
       'avatar': avatar,
+      'status': status.toString(),
     };
   }
 }

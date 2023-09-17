@@ -26,7 +26,6 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void initState() {
-    getCurrentUserName();
     super.initState();
   }
 
@@ -140,15 +139,15 @@ class _SearchPageState extends State<SearchPage> {
             });
             if (context.mounted) UIHelpers.showSnackBar(context, Colors.green, 'Đã vào nhóm thành công');
             Future.delayed(const Duration(seconds: 2), () {
-              UIHelpers.nextScreen(
-                context,
-                ChatPage(
-                  groupId: groupId,
-                  groupName: groupName,
-                  userName: userName,
-                  groupAvatar: groupIcon,
-                ),
-              );
+              // UIHelpers.nextScreen(
+              //   context,
+              //   ChatPage(
+              //     groupId: groupId,
+              //     groupName: groupName,
+              //     userName: userName,
+              //     groupAvatar: groupIcon,
+              //   ),
+              // );
             });
           } else {
             setState(() {
@@ -289,12 +288,5 @@ class _SearchPageState extends State<SearchPage> {
         _isFriended = value;
       });
     });
-  }
-
-  getCurrentUserName() async {
-    setState(() {
-      username = SharedPreference.getUserName();
-    });
-    user = FirebaseAuth.instance.currentUser;
   }
 }

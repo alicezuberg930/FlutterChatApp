@@ -9,7 +9,7 @@ class Message {
     return Message(
       status: json['status'],
       message: json['message'],
-      data: json['data'] != null ? List<MessageData>.from(json["data"].map((x) => MessageData.fromJson(x))) : [],
+      data: json['data'] != null ? List<MessageData>.from(json["data"].map((x) => MessageData.fromJson(x))) : null,
     );
   }
 
@@ -28,7 +28,8 @@ class MessageData {
   String? senderId;
   String? conversationId;
   String? messageType;
-  String? photos;
+  dynamic photos;
+  String? name;
 
   MessageData({
     this.id,
@@ -37,27 +38,30 @@ class MessageData {
     this.conversationId,
     this.messageType,
     this.photos,
+    this.name,
   });
 
   factory MessageData.fromJson(Map<String, dynamic> json) {
     return MessageData(
-      id: json['id'],
+      id: json['id'].toString(),
       content: json['content'],
-      senderId: json['sender_id'],
-      conversationId: json['conversation_id'],
+      senderId: json['sender_id'].toString(),
+      conversationId: json['conversation_id'].toString(),
       messageType: json['message_type'],
       photos: json['photos'],
+      name: json['name'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': id.toString(),
       'content': content,
-      'sender_id': senderId,
-      'conversation_id': conversationId,
+      'sender_id': senderId.toString(),
+      'conversation_id': conversationId.toString(),
       'message_type': messageType,
       'photos': photos,
+      'name': name,
     };
   }
 }

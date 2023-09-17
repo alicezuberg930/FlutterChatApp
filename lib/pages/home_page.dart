@@ -1,20 +1,18 @@
+import 'dart:convert';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/model/conversation.dart';
+import 'package:flutter_chat_app/model/friend.dart';
 import 'package:flutter_chat_app/model/user.dart';
+import 'package:flutter_chat_app/pages/chat_page.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/pages/profile_page.dart';
 import 'package:flutter_chat_app/pages/search_page.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
-import 'package:flutter_chat_app/service/authentication.dart';
-import 'package:flutter_chat_app/service/database.dart';
-import 'package:flutter_chat_app/service/file_firebase.dart';
-import 'package:flutter_chat_app/shared/gets.dart';
-import 'package:flutter_chat_app/widgets/group_tile.dart';
+import 'package:flutter_chat_app/widgets/conversation_tile.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
-import 'package:flutter_chat_app/widgets/user_tile.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -27,11 +25,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   ImagePicker picker = ImagePicker();
-  File? userAvatar;
-  String? userName;
-  String frienduserName = "";
+  List<ConversationData>? conversationList;
+  List<FriendData>? friendList;
   String? email;
-  String? avatar;
   String groupAvatar = "";
   String friendAvatar = "";
   Stream? userMetaData;
@@ -40,131 +36,27 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    getUserConversations();
+    getUserFriends();
     super.initState();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-              onPressed: () => UIHelpers.nextScreen(context, const SearchPage()),
-              icon: const Icon(Icons.search),
-            )
-          ],
-          elevation: 0,
-          centerTitle: true,
-          title: const Text(
-            "Tiến's Messenger",
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          backgroundColor: Theme.of(context).primaryColor,
-        ),
-        drawer: customDrawerWidget(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => {popUpDiolog(context)},
-          elevation: 0,
-          backgroundColor: Theme.of(context).primaryColor,
-          child: const Icon(Icons.add, color: Colors.white, size: 30),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              // avatarListWidget(),
-              // groupListWidget(),
-              // userListWidget(),
-            ],
-          ),
-        ),
-      ),
-    );
+  getUserConversations() async {
+    var conversationData = await APIService.getUserConversation(widget.user.data!.id!);
+    if (conversationData != null) {
+      setState(() {
+        conversationList = conversationData.data;
+      });
+    }
   }
 
-  groupListWidget() {
-    return StreamBuilder(
-      stream: userMetaData,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data['groups'] != null) {
-            if (snapshot.data['groups'].length > 0) {
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: snapshot.data['groups'].length,
-                itemBuilder: (context, index) {
-                  int reverseIndex = snapshot.data['groups'].length - index - 1;
-                  Database().getGroupAvatar(getId(snapshot.data['groups'][reverseIndex])).then((value) => {
-                        setState(() {
-                          groupAvatar = value;
-                        })
-                      });
-                  return GroupTile(
-                    userName: snapshot.data['fullName'],
-                    groupId: getId(snapshot.data['groups'][reverseIndex]),
-                    groupName: getName(snapshot.data['groups'][reverseIndex]),
-                    groupAvatar: groupAvatar,
-                  );
-                },
-              );
-            } else {
-              return noGroupWidget();
-            }
-          } else {
-            return noGroupWidget();
-          }
-        } else {
-          return Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor));
-        }
-      },
-    );
-  }
-
-  userListWidget() {
-    return StreamBuilder(
-      stream: userMetaData,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data['friends'] != null) {
-            if (snapshot.data['friends'].length > 0) {
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: snapshot.data['friends'].length,
-                itemBuilder: (context, index) {
-                  int reverseIndex = snapshot.data['friends'].length - index - 1;
-                  Database().getFriendAvatar(snapshot.data['friends'][reverseIndex]).then((value) => {
-                        setState(() {
-                          friendAvatar = value;
-                        })
-                      });
-                  Database().getFriendUsername(snapshot.data['friends'][reverseIndex]).then((value) => {
-                        // setState(() {
-                        frienduserName = value
-                        // })
-                      });
-                  return UserTile(
-                    userName: snapshot.data['fullName'],
-                    friendUid: snapshot.data['friends'][reverseIndex],
-                    friendName: frienduserName,
-                    friendAvatar: friendAvatar,
-                  );
-                },
-              );
-            } else {
-              return noGroupWidget();
-            }
-          } else {
-            return noGroupWidget();
-          }
-        } else {
-          return Center(
-            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
-          );
-        }
-      },
-    );
+  getUserFriends() async {
+    var friendData = await APIService.getUserFriends(widget.user.data!.id!);
+    if (friendData != null) {
+      setState(() {
+        friendList = friendData.data;
+      });
+    }
   }
 
   popUpDiolog(BuildContext context) {
@@ -217,7 +109,6 @@ class _HomePageState extends State<HomePage> {
                       setState(() {
                         _isloading = true;
                       });
-                      Database(uid: FirebaseAuth.instance.currentUser!.uid).createGroup(userName!, FirebaseAuth.instance.currentUser!.uid, groupName!).whenComplete(() => _isloading = false);
                       Navigator.of(context).pop();
                       UIHelpers.showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
                     }
@@ -238,37 +129,25 @@ class _HomePageState extends State<HomePage> {
 
   noGroupWidget() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 25),
+      margin: const EdgeInsets.only(top: 20),
+      alignment: Alignment.center,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(),
           GestureDetector(
             onTap: () {
               popUpDiolog(context);
             },
-            child: Icon(Icons.add_circle, color: Colors.grey[700], size: 75),
+            child: Icon(Icons.add_circle, color: Colors.grey[700], size: 70),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           const Text(
-            'Bạn chưa vào nhóm nào',
+            'You dont have any conversations.',
             textAlign: TextAlign.center,
           )
         ],
       ),
     );
-  }
-
-  getUserData() async {
-    userName = SharedPreference.getUserName();
-    email = SharedPreference.getUserEmail();
-    avatar = SharedPreference.getUserAvatar();
-    await Database(uid: FirebaseAuth.instance.currentUser!.uid).getUserMetaData().then((snapshots) {
-      setState(() {
-        userMetaData = snapshots;
-      });
-    });
   }
 
   customDrawerWidget() {
@@ -280,22 +159,16 @@ class _HomePageState extends State<HomePage> {
             alignment: Alignment.center,
             child: Stack(
               children: [
-                avatar != ""
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(100),
-                        child: Image(
-                          image: NetworkImage(widget.user.data!.avatar!),
-                          height: 150,
-                          width: 150,
-                          fit: BoxFit.cover,
-                          filterQuality: FilterQuality.medium,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.account_circle,
-                        size: 150,
-                        color: Colors.blueGrey,
-                      ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Image(
+                    image: NetworkImage(widget.user.data!.avatar!),
+                    height: 150,
+                    width: 150,
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
                 Positioned(
                   bottom: 10,
                   right: 10,
@@ -307,11 +180,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: InkWell(
                       onTap: () => showImagePicker(context, chooseImage),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.black,
-                        size: 24,
-                      ),
+                      child: const Icon(Icons.camera_alt, color: Colors.black, size: 24),
                     ),
                   ),
                 ),
@@ -338,11 +207,11 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ListTile(
-            onTap: () => {UIHelpers.nextScreen(context, ProfilePage(username: userName!, email: email!))},
+            onTap: () => {UIHelpers.nextScreen(context, const ProfilePage())},
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.verified_user),
             title: const Text(
-              "Thông tin cá nhân",
+              "Personal information",
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
@@ -359,18 +228,18 @@ class _HomePageState extends State<HomePage> {
                         Icon(Icons.warning),
                         SizedBox(width: 5),
                         Text(
-                          "Đăng xuất",
+                          "Alert",
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
-                    content: const Text("Bạn có chắc chắn đăng xuất?"),
+                    content: const Text("Are you sure you want to log out?"),
                     actions: [
                       GestureDetector(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(10)),
                           onPressed: () => {Navigator.pop(context)},
-                          child: const Text("Không"),
+                          child: const Text("Yes"),
                         ),
                       ),
                       GestureDetector(
@@ -380,11 +249,10 @@ class _HomePageState extends State<HomePage> {
                             backgroundColor: Colors.yellow[700],
                           ),
                           onPressed: () async {
-                            // authentication.signOut();
                             SharedPreference.clearAllData();
                             UIHelpers.nextScreenReplace(context, const LoginPage());
                           },
-                          child: const Text("Có"),
+                          child: const Text("No"),
                         ),
                       ),
                     ],
@@ -395,16 +263,16 @@ class _HomePageState extends State<HomePage> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.exit_to_app),
             title: const Text(
-              "Đăng xuất",
+              "Log out",
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
           ListTile(
-            onTap: () => {UIHelpers.nextScreen(context, ProfilePage(username: userName!, email: email!))},
+            onTap: () => {},
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.settings),
             title: const Text(
-              "Cài đặt",
+              "Settings",
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
@@ -413,41 +281,82 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  avatarListWidget() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 15, bottom: 15, left: 15),
-      child: SizedBox(
-        height: 110,
-        child: ListView.builder(
-          shrinkWrap: true,
-          scrollDirection: Axis.horizontal,
-          itemCount: 10,
-          itemBuilder: (context, index) {
-            return Container(
-              height: 115,
-              margin: const EdgeInsets.only(right: 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    child: Text('T'),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.only(top: 10),
-                    width: 80,
-                    child: const Text(
-                      'Nguyễn Vĩnh Tiến',
-                      textAlign: TextAlign.center,
+  conversationsListWidget() {
+    return conversationList == null
+        ? noGroupWidget()
+        : RefreshIndicator(
+            onRefresh: () => getUserConversations(),
+            child: ListView.builder(
+              itemCount: conversationList!.length,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return ConversationTile(
+                  conversationId: conversationList![index].conversationId!,
+                  recentMessage: conversationList![index].recentMessage!,
+                  conversationName: conversationList![index].conversationName!,
+                  conversationAvatar: conversationList![index].conversationAvatar!,
+                  type: conversationList![index].type!,
+                );
+              },
+            ),
+          );
+  }
+
+  friendListWidget() {
+    return friendList == null
+        ? const SizedBox.shrink()
+        : Padding(
+            padding: const EdgeInsets.only(top: 15, bottom: 15, left: 15),
+            child: SizedBox(
+              height: 110,
+              child: ListView.builder(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemCount: friendList!.length,
+                itemBuilder: (context, index) {
+                  return InkWell(
+                    onTap: () {
+                      UIHelpers.nextScreen(
+                        context,
+                        ChatPage(
+                          userId: widget.user.data!.id!,
+                          conversationId: friendList![index].conversationId!,
+                          conversationName: friendList![index].name!,
+                          conversationAvatar: friendList![index].avatar!,
+                          type: "friend",
+                          status: friendList![index].userStatus!,
+                        ),
+                      );
+                    },
+                    child: Container(
+                      height: 110,
+                      margin: const EdgeInsets.only(right: 15),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: Image(
+                              image: NetworkImage(friendList![index].avatar!),
+                              height: 65,
+                              width: 65,
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.high,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(top: 10),
+                            width: 80,
+                            child: Text(friendList![index].name!, textAlign: TextAlign.center),
+                          )
+                        ],
+                      ),
                     ),
-                  )
-                ],
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
-    );
+            ),
+          );
   }
 
   chooseImage(ImageSource src) async {
@@ -496,13 +405,14 @@ class _HomePageState extends State<HomePage> {
     );
     if (croppedImage != null) {
       imageCache.clear();
-      APIService.updateUserAvatar(croppedImage.path, widget.user.data!.id!).then((value) {
+      APIService.updateUserAvatar({'avatar': croppedImage.path, 'id': widget.user.data!.id!}).then((value) {
         if (value != null) {
           ChatUser user = value;
           if (user.status == "success") {
             setState(() {
               widget.user.data!.avatar = user.data!.avatar;
             });
+            SharedPreference.saveUserData(jsonEncode(user));
           } else {
             UIHelpers.showSnackBar(context, Colors.red, user.message);
           }
@@ -511,5 +421,45 @@ class _HomePageState extends State<HomePage> {
         }
       });
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              onPressed: () => UIHelpers.nextScreen(context, const SearchPage()),
+              icon: const Icon(Icons.search),
+            )
+          ],
+          elevation: 0,
+          centerTitle: true,
+          title: const Text(
+            "Tiến's Messenger",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).primaryColor,
+        ),
+        drawer: customDrawerWidget(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => {popUpDiolog(context)},
+          elevation: 0,
+          backgroundColor: Theme.of(context).primaryColor,
+          child: const Icon(Icons.add, color: Colors.white, size: 30),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              friendListWidget(),
+              conversationsListWidget(),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

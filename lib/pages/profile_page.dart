@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_app/service/authentication.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/model/user.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String username;
-  final String email;
-  const ProfilePage({Key? key, required this.username, required this.email}) : super(key: key);
+  const ProfilePage({Key? key}) : super(key: key);
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  Authentication authentication = Authentication();
+  ChatUser? user;
+
+  @override
+  void initState() {
+    user = SharedPreference.getUserData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -21,7 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
           elevation: 0,
           centerTitle: true,
           title: const Text(
-            "Thông tin cá nhân",
+            "Personal information",
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
@@ -32,9 +38,18 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.account_circle, size: 150, color: Colors.grey),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: Image(
+                  image: NetworkImage(user!.data!.avatar!),
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.medium,
+                ),
+              ),
               Text(
-                widget.username,
+                user!.data!.name!,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
             ],

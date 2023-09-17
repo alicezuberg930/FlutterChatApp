@@ -46,6 +46,7 @@ class _MyChatAppState extends State<MyChatApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter chat app',
       theme: ThemeData(
         primaryColor: Constants.primaryColor,
