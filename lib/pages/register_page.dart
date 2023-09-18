@@ -6,11 +6,9 @@ import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
-import 'package:flutter_chat_app/pages/chat_page.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/login_page.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
-import 'package:flutter_chat_app/service/authentication.dart';
 import 'package:flutter_chat_app/common/form_input.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
@@ -25,7 +23,6 @@ class _RegisterPageState extends State<RegisterPage> {
   String email = "";
   String password = "";
   String fullname = "";
-  Authentication authentication = Authentication();
   final formkey = GlobalKey<FormState>();
 
   @override

@@ -1,10 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
-import 'package:flutter_chat_app/service/authentication.dart';
-import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/shared/gets.dart';
 
 class GroupInfoPage extends StatefulWidget {
@@ -19,12 +16,10 @@ class GroupInfoPage extends StatefulWidget {
 }
 
 class _GroupInfoPageState extends State<GroupInfoPage> {
-  Authentication authentication = Authentication();
   Stream? members;
 
   @override
   void initState() {
-    getGroupMembers();
     super.initState();
   }
 
@@ -55,9 +50,6 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                       IconButton(
                         onPressed: () async {
                           ChatUser? chatUser;
-                          Database(uid: FirebaseAuth.instance.currentUser!.uid).toggleGroupJoin(widget.groupId, widget.groupName, getName(widget.adminName)).whenComplete(() {
-                            UIHelpers.nextScreenReplace(context, HomePage(user: chatUser!));
-                          });
                         },
                         icon: const Icon(Icons.done, color: Colors.green),
                       ),
@@ -164,13 +156,5 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
         }
       },
     );
-  }
-
-  getGroupMembers() async {
-    Database(uid: FirebaseAuth.instance.currentUser!.uid).getGroupMembers(widget.groupId).then((value) {
-      setState(() {
-        members = value;
-      });
-    });
   }
 }

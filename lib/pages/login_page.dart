@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
@@ -11,8 +9,6 @@ import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/pages/home_page.dart';
 import 'package:flutter_chat_app/pages/register_page.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
-import 'package:flutter_chat_app/service/authentication.dart';
-import 'package:flutter_chat_app/service/database.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
 import 'package:flutter_chat_app/common/form_input.dart';
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
@@ -28,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
   String email = "";
   String password = "";
   final formkey = GlobalKey<FormState>();
-  Authentication authentication = Authentication();
 
   @override
   void dispose() {

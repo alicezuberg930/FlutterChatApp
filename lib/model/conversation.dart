@@ -28,8 +28,11 @@ class ConversationData {
   String? type;
   String? recentMessage;
   String? recentSender;
-  String? conversationAvatar;
-  String? conversationName;
+  dynamic receiverName;
+  dynamic groupName;
+  dynamic userAvatar;
+  dynamic groupAvatar;
+  dynamic status;
 
   ConversationData({
     this.userId,
@@ -37,8 +40,11 @@ class ConversationData {
     this.type,
     this.recentMessage,
     this.recentSender,
-    this.conversationAvatar,
-    this.conversationName,
+    this.receiverName,
+    this.groupName,
+    this.userAvatar,
+    this.groupAvatar,
+    this.status,
   });
 
   factory ConversationData.fromJson(Map<String, dynamic> json) {
@@ -48,8 +54,11 @@ class ConversationData {
       type: json['type'],
       recentMessage: json['recent_message'],
       recentSender: json['recent_sender'].toString(),
-      conversationAvatar: json['conversation_avatar'],
-      conversationName: json['conversation_name'],
+      receiverName: json['receiver_name'],
+      groupName: json['group_name'],
+      userAvatar: json['user_avatar'],
+      groupAvatar: json['group_avatar'],
+      status: json['status'],
     );
   }
 
@@ -60,8 +69,11 @@ class ConversationData {
       'type': type,
       'recent_message': recentMessage,
       'recent_sender': recentSender.toString(),
-      'conversation_avatar': conversationAvatar,
-      'conversation_name': conversationName,
+      'receiver_name': receiverName,
+      'group_name': groupName,
+      'user_avatar': userAvatar,
+      'group_avatar': groupAvatar,
+      'status': status,
     };
   }
 }

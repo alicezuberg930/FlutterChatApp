@@ -12,4 +12,5 @@ class Constant {
   static const sendMessage = "$apiUrl/send-message";
   static const updateUserAvatar = "$apiUrl/update-user-avatar";
   static const updateUserStatus = "$apiUrl/update-user-status";
+  static const searchUser = "$apiUrl/search-user";
 }

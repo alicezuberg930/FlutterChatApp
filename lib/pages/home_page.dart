@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/conversation.dart';
@@ -216,6 +217,15 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ListTile(
+            onTap: () => {},
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+            leading: const Icon(Icons.settings),
+            title: const Text(
+              "Settings",
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+          ),
+          ListTile(
             onTap: () async => {
               showDialog(
                 barrierDismissible: false,
@@ -239,7 +249,7 @@ class _HomePageState extends State<HomePage> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(10)),
                           onPressed: () => {Navigator.pop(context)},
-                          child: const Text("Yes"),
+                          child: const Text("No"),
                         ),
                       ),
                       GestureDetector(
@@ -252,7 +262,7 @@ class _HomePageState extends State<HomePage> {
                             SharedPreference.clearAllData();
                             UIHelpers.nextScreenReplace(context, const LoginPage());
                           },
-                          child: const Text("No"),
+                          child: const Text("Yes"),
                         ),
                       ),
                     ],
@@ -267,15 +277,6 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
-          ListTile(
-            onTap: () => {},
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-            leading: const Icon(Icons.settings),
-            title: const Text(
-              "Settings",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-          ),
         ],
       ),
     );
@@ -284,20 +285,17 @@ class _HomePageState extends State<HomePage> {
   conversationsListWidget() {
     return conversationList == null
         ? noGroupWidget()
-        : RefreshIndicator(
-            onRefresh: () => getUserConversations(),
-            child: ListView.builder(
-              itemCount: conversationList!.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return ConversationTile(
-                  conversationId: conversationList![index].conversationId!,
-                  recentMessage: conversationList![index].recentMessage!,
-                  conversationName: conversationList![index].conversationName!,
-                  conversationAvatar: conversationList![index].conversationAvatar!,
-                  type: conversationList![index].type!,
-                );
-              },
+        : ScrollConfiguration(
+            behavior: RemoveGlowingBehavior(),
+            child: RefreshIndicator(
+              onRefresh: () => getUserConversations(),
+              child: ListView.builder(
+                itemCount: conversationList!.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  return ConversationTile(conversationData: conversationList![index]);
+                },
+              ),
             ),
           );
   }

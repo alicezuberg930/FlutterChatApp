@@ -1,43 +1,30 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
+import 'package:flutter_chat_app/model/conversation.dart';
+import 'package:flutter_chat_app/pages/chat_page.dart';
 
-class ConversationTile extends StatefulWidget {
-  final String conversationId;
-  final String recentMessage;
-  final String conversationName;
-  final String conversationAvatar;
-  final String type;
-  String? status;
+class ConversationTile extends StatelessWidget {
+  ConversationData? conversationData;
 
-  ConversationTile({
-    Key? key,
-    required this.conversationId,
-    required this.recentMessage,
-    required this.conversationName,
-    required this.conversationAvatar,
-    required this.type,
-    this.status,
-  }) : super(key: key);
-
-  @override
-  State<ConversationTile> createState() => _ConversationTileState();
-}
-
-class _ConversationTileState extends State<ConversationTile> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  ConversationTile({Key? key, this.conversationData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
+      onLongPress: () {},
       onTap: () {
-        // UIHelpers.nextScreen(
-        //   context,
-        //   ChatPage(),
-        // );
+        UIHelpers.nextScreen(
+          context,
+          ChatPage(
+            conversationAvatar: conversationData!.type! == "group" ? conversationData!.groupAvatar! : conversationData!.userAvatar!,
+            conversationId: conversationData!.conversationId!,
+            conversationName: conversationData!.type! == "group" ? conversationData!.groupName! : conversationData!.receiverName!,
+            type: conversationData!.type!,
+            userId: conversationData!.userId!,
+          ),
+        );
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -45,14 +32,16 @@ class _ConversationTileState extends State<ConversationTile> {
         child: ListTile(
           leading: CircleAvatar(
             radius: 30,
-            backgroundImage: NetworkImage(widget.conversationAvatar),
+            backgroundImage: NetworkImage(
+              conversationData!.type! == "group" ? conversationData!.groupAvatar! : conversationData!.userAvatar!,
+            ),
           ),
           title: Text(
-            widget.conversationName,
+            conversationData!.type! == "group" ? conversationData!.groupName! : conversationData!.receiverName!,
             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black45),
           ),
           subtitle: Text(
-            widget.recentMessage,
+            conversationData!.recentMessage!,
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
           ),
         ),

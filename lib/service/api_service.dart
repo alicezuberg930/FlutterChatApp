@@ -4,6 +4,7 @@ import 'package:flutter_chat_app/common/constant.dart';
 import 'package:flutter_chat_app/model/conversation.dart';
 import 'package:flutter_chat_app/model/friend.dart';
 import 'package:flutter_chat_app/model/message.dart';
+import 'package:flutter_chat_app/model/stranger.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:http/http.dart' as http;
 
@@ -103,6 +104,20 @@ class APIService {
       Map<String, dynamic> responseBody = json.decode(response.body);
       if (response.statusCode == 200) {
         return Message.fromJson(responseBody);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future searchUser(String fullname) async {
+    try {
+      final response = await http.get(Uri.parse("${Constant.searchUser}?fullname=$fullname"));
+      Map<String, dynamic> responseBody = json.decode(response.body);
+      if (response.statusCode == 200) {
+        return Stranger.fromJson(responseBody);
       } else {
         return null;
       }

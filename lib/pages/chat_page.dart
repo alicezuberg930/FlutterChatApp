@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
-import 'package:flutter_chat_app/service/file_firebase.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
 import 'package:image_picker/image_picker.dart';
@@ -48,7 +47,6 @@ class _ChatPageState extends State<ChatPage> {
     if (messageData != null) {
       setState(() {
         messageList = messageData.data;
-        print(messageList![0].toJson().toString());
       });
     }
   }
@@ -78,18 +76,10 @@ class _ChatPageState extends State<ChatPage> {
 
   chooseImage(ImageSource src) async {
     await picker.pickImage(source: src, imageQuality: 75).then(
-          (value) => {
-            if (value != null)
-              {
-                FileFirebase().uploadImage(File(value.path), "group_image").then(
-                  (value) {
-                    String val = value;
-                    sendMessage(val);
-                  },
-                )
-              }
-          },
-        );
+      (value) {
+        if (value != null) {}
+      },
+    );
   }
 
   @override
@@ -122,7 +112,6 @@ class _ChatPageState extends State<ChatPage> {
                       widget.status == "0" ? "offline" : "online",
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.grey[300]),
                     ),
-                  if (widget.type == "group") const Text(""),
                 ],
               ),
             ],
