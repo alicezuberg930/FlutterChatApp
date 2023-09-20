@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/conversation.dart';
-import 'package:flutter_chat_app/pages/chat_page.dart';
+import 'package:flutter_chat_app/screen/chat_screen.dart';
 
 class ConversationTile extends StatelessWidget {
   ConversationData? conversationData;
@@ -28,7 +28,7 @@ class ConversationTile extends StatelessWidget {
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
         child: ListTile(
           leading: CircleAvatar(
             radius: 30,

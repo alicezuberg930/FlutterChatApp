@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
-import 'package:flutter_chat_app/pages/home_page.dart';
-import 'package:flutter_chat_app/pages/login_page.dart';
+import 'package:flutter_chat_app/screen/home_screen.dart';
+import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 
 void main() async {

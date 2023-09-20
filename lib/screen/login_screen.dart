@@ -6,23 +6,23 @@ import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
-import 'package:flutter_chat_app/pages/home_page.dart';
-import 'package:flutter_chat_app/pages/login_page.dart';
+import 'package:flutter_chat_app/screen/home_screen.dart';
+import 'package:flutter_chat_app/screen/register_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
-import 'package:flutter_chat_app/common/form_input.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
+import 'package:flutter_chat_app/common/form_input.dart';
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _LoginPageState extends State<LoginPage> {
   String email = "";
   String password = "";
-  String fullname = "";
   final formkey = GlobalKey<FormState>();
 
   @override
@@ -49,10 +49,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text("Tiến's Chat app", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
+                      const Text(
+                        "Tiến's Chat app",
+                        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 10),
                       const Text(
-                        'Đăng ký ngay để tạo tài khoản mới',
+                        'Login now to message each other',
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(height: 25),
@@ -62,24 +65,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 25),
                       TextFormField(
-                        onChanged: (value) => {setState(() => fullname = value)},
-                        validator: (value) {
-                          if (value!.isNotEmpty) {
-                            return null;
-                          } else {
-                            return "Tên không được để trống";
-                          }
-                        },
-                        decoration: textInutDecoration.copyWith(
-                          labelText: "Tên đầy đủ",
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      TextFormField(
                         onChanged: (value) => {setState(() => email = value)},
                         validator: (value) {
                           if (emailValidator(value!) == false) {
-                            return "Email sai định dạng";
+                            return "Email format is incorrect";
                           } else {
                             return null;
                           }
@@ -93,14 +82,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         obscureText: true,
                         validator: (value) {
                           if (value!.length < 6) {
-                            return "Mật khẩu phải có ít nhất 6 ký tự";
+                            return "Password need to have at least 6 characters";
                           } else {
                             return null;
                           }
                         },
                         onChanged: (value) => {setState(() => password = value)},
                         decoration: textInutDecoration.copyWith(
-                          labelText: "Mật khẩu",
+                          labelText: "Password",
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -113,23 +102,20 @@ class _RegisterPageState extends State<RegisterPage> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
-                          onPressed: () => {register()},
-                          child: const Text(
-                            "Đăng ký",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
+                          onPressed: () => login(),
+                          child: const Text("Login", style: TextStyle(color: Colors.white, fontSize: 16)),
                         ),
                       ),
                       const SizedBox(height: 10),
                       Text.rich(
                         TextSpan(
-                          text: 'Đã có tài khoản?',
+                          text: "Don't have an account? ",
                           style: const TextStyle(color: Colors.black, fontSize: 14),
                           children: <TextSpan>[
                             TextSpan(
                               style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline),
-                              text: ' Đăng nhập ở đây',
-                              recognizer: TapGestureRecognizer()..onTap = () => UIHelpers.nextScreen(context, const LoginPage()),
+                              text: 'Register here',
+                              recognizer: TapGestureRecognizer()..onTap = () => UIHelpers.nextScreen(context, const RegisterPage()),
                             ),
                           ],
                         ),
@@ -145,10 +131,10 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  register() async {
+  login() async {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
-      await APIService.register({"fullname": fullname, "email": email, "password": password}).then((value) async {
+      APIService.login({'email': email, 'password': password}).then((value) {
         if (value != null) {
           ChatUser user = value;
           if (user.status == "success") {
@@ -160,7 +146,7 @@ class _RegisterPageState extends State<RegisterPage> {
             UIHelpers.showSnackBar(context, Colors.red, user.message);
           }
         } else {
-          UIHelpers.showSnackBar(context, Colors.red, value);
+          UIHelpers.showSnackBar(context, Colors.red, "unidentified problem occurred");
         }
         Loader.hide();
       });

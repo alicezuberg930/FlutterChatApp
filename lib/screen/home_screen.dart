@@ -7,10 +7,10 @@ import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/conversation.dart';
 import 'package:flutter_chat_app/model/friend.dart';
 import 'package:flutter_chat_app/model/user.dart';
-import 'package:flutter_chat_app/pages/chat_page.dart';
-import 'package:flutter_chat_app/pages/login_page.dart';
-import 'package:flutter_chat_app/pages/profile_page.dart';
-import 'package:flutter_chat_app/pages/search_page.dart';
+import 'package:flutter_chat_app/screen/chat_screen.dart';
+import 'package:flutter_chat_app/screen/login_screen.dart';
+import 'package:flutter_chat_app/screen/profile_screen.dart';
+import 'package:flutter_chat_app/screen/search_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/widgets/conversation_tile.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
@@ -303,56 +303,53 @@ class _HomePageState extends State<HomePage> {
   friendListWidget() {
     return friendList == null
         ? const SizedBox.shrink()
-        : Padding(
-            padding: const EdgeInsets.only(top: 15, bottom: 15, left: 15),
-            child: SizedBox(
-              height: 110,
-              child: ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                itemCount: friendList!.length,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      UIHelpers.nextScreen(
-                        context,
-                        ChatPage(
-                          userId: widget.user.data!.id!,
-                          conversationId: friendList![index].conversationId!,
-                          conversationName: friendList![index].name!,
-                          conversationAvatar: friendList![index].avatar!,
-                          type: "friend",
-                          status: friendList![index].userStatus!,
-                        ),
-                      );
-                    },
-                    child: Container(
-                      height: 110,
-                      margin: const EdgeInsets.only(right: 15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(100),
-                            child: Image(
-                              image: NetworkImage(friendList![index].avatar!),
-                              height: 65,
-                              width: 65,
-                              fit: BoxFit.cover,
-                              filterQuality: FilterQuality.high,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.only(top: 10),
-                            width: 80,
-                            child: Text(friendList![index].name!, textAlign: TextAlign.center),
-                          )
-                        ],
+        : Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            height: 100,
+            child: ListView.builder(
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              itemCount: friendList!.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    UIHelpers.nextScreen(
+                      context,
+                      ChatPage(
+                        userId: widget.user.data!.id!,
+                        conversationId: friendList![index].conversationId!,
+                        conversationName: friendList![index].name!,
+                        conversationAvatar: friendList![index].avatar!,
+                        type: "friend",
+                        status: friendList![index].userStatus!,
                       ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(100),
+                          child: Image(
+                            image: NetworkImage(friendList![index].avatar!),
+                            height: 60,
+                            width: 60,
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.high,
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 10),
+                          width: 80,
+                          child: Text(friendList![index].name!, textAlign: TextAlign.center),
+                        )
+                      ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           );
   }

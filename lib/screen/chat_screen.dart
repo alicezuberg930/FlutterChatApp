@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
@@ -51,35 +52,54 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  sendMessage(String message) {
-    setState(() {
-      chatController.clear();
+  sendMessage(String message) async {
+    await APIService.sendMessage({
+      'content': message,
+      'sender_id': widget.userId,
+      'message_type': 'text',
+      'conversation_id': widget.conversationId,
+    }).then((value) {
+      getUserMessages();
     });
+  }
+
+  chooseMultipleImage() async {
+    List<File>? photos;
+    final selectedImages = await picker.pickMultiImage(imageQuality: 100);
+    if (selectedImages.isNotEmpty) {
+      photos = selectedImages.map((e) => File(e.path)).toList();
+      await APIService.sendMessage(
+        {
+          'content': chatController.text,
+          'sender_id': widget.userId,
+          'message_type': 'image',
+          'conversation_id': widget.conversationId,
+        },
+        photos: photos,
+      ).then((value) {
+        getUserMessages();
+      });
+    }
   }
 
   chatMessagesContainer() {
     return messageList == null
         ? const SizedBox.shrink()
-        : ListView.builder(
-            itemCount: messageList!.length,
-            itemBuilder: (context, index) {
-              return MessageTile(
-                content: messageList![index].content ?? "",
-                sender: messageList![index].name!,
-                sentbyme: widget.userId == messageList![index].senderId,
-                messageType: messageList![index].messageType!,
-                photos: messageList![index].photos ?? "",
-              );
-            },
+        : ScrollConfiguration(
+            behavior: RemoveGlowingBehavior(),
+            child: ListView.builder(
+              itemCount: messageList!.length,
+              itemBuilder: (context, index) {
+                return MessageTile(
+                  content: messageList![index].content ?? "",
+                  sender: messageList![index].name!,
+                  sentbyme: widget.userId == messageList![index].senderId,
+                  messageType: messageList![index].messageType!,
+                  photos: messageList![index].photos ?? "",
+                );
+              },
+            ),
           );
-  }
-
-  chooseImage(ImageSource src) async {
-    await picker.pickImage(source: src, imageQuality: 75).then(
-      (value) {
-        if (value != null) {}
-      },
-    );
   }
 
   @override
@@ -119,17 +139,7 @@ class _ChatPageState extends State<ChatPage> {
           backgroundColor: Theme.of(context).primaryColor,
           actions: [
             IconButton(
-              onPressed: () {
-                //   UIHelpers.next Screen(1
-                //     context,
-                //     GroupInfoPage(
-                //       conversationId: widget.conversationId,
-                //       conversationName: widget.conversationName,
-                //       adminName: adminName!,
-                //       groupAvatar: widget.conversationAvatar,
-                //     ),
-                // );
-              },
+              onPressed: () {},
               icon: const Icon(Icons.info),
             )
           ],
@@ -146,10 +156,12 @@ class _ChatPageState extends State<ChatPage> {
                   children: [
                     GestureDetector(
                       onTap: () async {
-                        Map<Permission, PermissionStatus> statuses = await [Permission.storage, Permission.camera].request();
-                        if (statuses[Permission.storage]!.isGranted && statuses[Permission.camera]!.isGranted) {
-                          if (context.mounted) showImagePicker(context, chooseImage);
-                        } else {}
+                        // PermissionStatus status = await Permission.storage.request();
+                        // if (status.isGranted) {
+                        if (context.mounted) await chooseMultipleImage();
+                        // } else {
+                        // await openAppSettings();
+                        // }
                       },
                       child: SizedBox(
                         height: 40,
@@ -159,21 +171,21 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () async {
-                        Map<Permission, PermissionStatus> statuses = await [Permission.storage, Permission.camera].request();
-                        if (statuses[Permission.storage]!.isGranted && statuses[Permission.camera]!.isGranted) {
-                          if (context.mounted) showImagePicker(context, chooseImage);
-                        } else {}
-                      },
-                      child: SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: Center(
-                          child: Icon(Icons.camera_alt, color: Theme.of(context).primaryColor),
-                        ),
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: () async {
+                    //     Map<Permission, PermissionStatus> statuses = await [Permission.storage, Permission.camera].request();
+                    //     if (statuses[Permission.storage]!.isGranted && statuses[Permission.camera]!.isGranted) {
+                    //       if (context.mounted) showImagePicker(context, chooseImage);
+                    //     } else {}
+                    //   },
+                    //   child: SizedBox(
+                    //     height: 40,
+                    //     width: 40,
+                    //     child: Center(
+                    //       child: Icon(Icons.camera_alt, color: Theme.of(context).primaryColor),
+                    //     ),
+                    //   ),
+                    // ),
                     const SizedBox(height: 12, width: 10),
                     Expanded(
                       child: Container(
@@ -187,31 +199,35 @@ class _ChatPageState extends State<ChatPage> {
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
-                            hintText: "Nhập tin nhắn",
+                            hintText: "Enter a message",
                             hintStyle: TextStyle(color: Colors.white, fontSize: 16),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () {
-                        chatController.text.isNotEmpty ? sendMessage(chatController.text) : sendMessage("👍");
-                      },
-                      child: SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: Center(
-                          child: chatController.text.isNotEmpty
-                              ? Icon(
+                    SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: Center(
+                        child: chatController.text.isNotEmpty
+                            ? GestureDetector(
+                                onTap: () {
+                                  sendMessage(chatController.text);
+                                  chatController.text = "";
+                                },
+                                child: Icon(
                                   Icons.send,
                                   color: Theme.of(context).primaryColor,
-                                )
-                              : Icon(
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: () => sendMessage("👍"),
+                                child: Icon(
                                   Icons.thumb_up,
                                   color: Theme.of(context).primaryColor,
                                 ),
-                        ),
+                              ),
                       ),
                     )
                   ],

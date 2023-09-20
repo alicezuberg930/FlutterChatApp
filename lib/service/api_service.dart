@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_chat_app/common/constant.dart';
 import 'package:flutter_chat_app/model/conversation.dart';
@@ -118,6 +119,38 @@ class APIService {
       Map<String, dynamic> responseBody = json.decode(response.body);
       if (response.statusCode == 200) {
         return Stranger.fromJson(responseBody);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future sendMessage(Map<String, String> params, {List<File>? photos}) async {
+    try {
+      dynamic response;
+      Map<String, dynamic> responseBody;
+      if (photos != null) {
+        var request = http.MultipartRequest('POST', Uri.parse(Constant.sendMessage));
+        request.headers.addAll(Constant.headers);
+        for (File photo in photos) {
+          request.files.add(http.MultipartFile.fromBytes('photos[]', photo.readAsBytesSync()));
+        }
+        request.fields['content'] = params['content']!;
+        request.fields['sender_id'] = params['sender_id']!;
+        request.fields['message_type'] = params['message_type']!;
+        request.fields['conversation_id'] = params['conversation_id']!;
+        response = await request.send();
+        var responseData = await response.stream.toBytes();
+        responseBody = jsonDecode(String.fromCharCodes(responseData));
+      } else {
+        response = await http.post(Uri.parse(Constant.sendMessage), body: params);
+        responseBody = json.decode(response.body);
+      }
+      print(responseBody.toString());
+      if (response.statusCode == 200) {
+        return Message.fromJson(responseBody);
       } else {
         return null;
       }

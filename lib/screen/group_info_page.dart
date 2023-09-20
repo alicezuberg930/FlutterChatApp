@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user.dart';
-import 'package:flutter_chat_app/pages/home_page.dart';
+import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/shared/gets.dart';
 
 class GroupInfoPage extends StatefulWidget {
