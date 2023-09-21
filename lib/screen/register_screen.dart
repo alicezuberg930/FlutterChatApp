@@ -52,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const Text("Tiến's Chat app", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 10),
                       const Text(
-                        'Đăng ký ngay để tạo tài khoản mới',
+                        'Register now to make a new account',
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(height: 25),
@@ -67,11 +67,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (value!.isNotEmpty) {
                             return null;
                           } else {
-                            return "Tên không được để trống";
+                            return "Fullname cannot be empty";
                           }
                         },
                         decoration: textInutDecoration.copyWith(
-                          labelText: "Tên đầy đủ",
+                          labelText: "Fullname",
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -79,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onChanged: (value) => {setState(() => email = value)},
                         validator: (value) {
                           if (emailValidator(value!) == false) {
-                            return "Email sai định dạng";
+                            return "Email is invalid";
                           } else {
                             return null;
                           }
@@ -93,14 +93,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         obscureText: true,
                         validator: (value) {
                           if (value!.length < 6) {
-                            return "Mật khẩu phải có ít nhất 6 ký tự";
+                            return "Password need at least 6 character";
                           } else {
                             return null;
                           }
                         },
                         onChanged: (value) => {setState(() => password = value)},
                         decoration: textInutDecoration.copyWith(
-                          labelText: "Mật khẩu",
+                          labelText: "Password",
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -115,7 +115,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           onPressed: () => {register()},
                           child: const Text(
-                            "Đăng ký",
+                            "Register",
                             style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
                         ),
@@ -123,12 +123,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 10),
                       Text.rich(
                         TextSpan(
-                          text: 'Đã có tài khoản?',
+                          text: 'Already have an account?',
                           style: const TextStyle(color: Colors.black, fontSize: 14),
                           children: <TextSpan>[
                             TextSpan(
                               style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline),
-                              text: ' Đăng nhập ở đây',
+                              text: ' Login here',
                               recognizer: TapGestureRecognizer()..onTap = () => UIHelpers.nextScreen(context, const LoginPage()),
                             ),
                           ],

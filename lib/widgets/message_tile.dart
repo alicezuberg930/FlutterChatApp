@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:cached_network_image/cached_network_image.dart';
 import "package:flutter/material.dart";
 // import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_chat_app/widgets/custom_image_network.dart';
@@ -31,12 +32,13 @@ class _MessageTileState extends State<MessageTile> {
       padding: EdgeInsets.only(top: 4, bottom: 4, left: widget.sentbyme ? 0 : 24, right: widget.sentbyme ? 24 : 0),
       alignment: widget.sentbyme ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
+        width: MediaQuery.of(context).size.width * 0.75,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
         child: Column(
           crossAxisAlignment: widget.sentbyme ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Text(
-              widget.sender.toUpperCase(),
+              widget.sender,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
@@ -60,7 +62,13 @@ class _MessageTileState extends State<MessageTile> {
                           topRight: Radius.circular(20),
                           bottomRight: Radius.circular(20),
                         ),
-                  child: CustomNetworkImage(imagePath: widget.photos[0]),
+                  child: CustomNetworkImage(
+                    imagePath: widget.photos[i],
+                    // progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+                    //   child: CircularProgressIndicator(value: downloadProgress.progress),
+                    // ),
+                    // errorWidget: (context, url, error) => const Icon(Icons.error),
+                  ),
                 ),
             if (widget.messageType == "text")
               Container(
@@ -80,7 +88,7 @@ class _MessageTileState extends State<MessageTile> {
                     color: widget.sentbyme ? Colors.blue : Colors.grey[300]),
                 child: Text(
                   widget.content,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.start,
                   style: TextStyle(fontSize: 16, color: widget.sentbyme ? Colors.white : Colors.black),
                 ),
               )

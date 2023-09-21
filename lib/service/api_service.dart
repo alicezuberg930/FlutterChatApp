@@ -135,7 +135,7 @@ class APIService {
         var request = http.MultipartRequest('POST', Uri.parse(Constant.sendMessage));
         request.headers.addAll(Constant.headers);
         for (File photo in photos) {
-          request.files.add(http.MultipartFile.fromBytes('photos[]', photo.readAsBytesSync()));
+          request.files.add(await http.MultipartFile.fromPath('photos[]', photo.path));
         }
         request.fields['content'] = params['content']!;
         request.fields['sender_id'] = params['sender_id']!;
@@ -148,7 +148,7 @@ class APIService {
         response = await http.post(Uri.parse(Constant.sendMessage), body: params);
         responseBody = json.decode(response.body);
       }
-      print(responseBody.toString());
+      // print(responseBody.toString());
       if (response.statusCode == 200) {
         return Message.fromJson(responseBody);
       } else {

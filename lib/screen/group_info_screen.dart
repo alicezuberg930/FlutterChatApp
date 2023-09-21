@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
-import 'package:flutter_chat_app/shared/gets.dart';
 
 class GroupInfoPage extends StatefulWidget {
   final String groupId;
@@ -98,7 +97,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 5),
-                      Text("Admin: ${getName(widget.adminName)}")
+                      Text("Admin: ${(widget.adminName)}")
                     ],
                   )
                 ],
@@ -129,12 +128,12 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                         radius: 30,
                         backgroundColor: Theme.of(context).primaryColor,
                         child: Text(
-                          getName(snapshot.data['members'][index]).substring(0, 1).toUpperCase(),
+                          (snapshot.data['members'][index]).substring(0, 1).toUpperCase(),
                           style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      title: Text(getName(snapshot.data['members'][index])),
-                      subtitle: Text(getId(snapshot.data['members'][index])),
+                      title: Text((snapshot.data['members'][index])),
+                      subtitle: Text((snapshot.data['members'][index])),
                     ),
                   );
                 },
