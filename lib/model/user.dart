@@ -28,6 +28,7 @@ class ChatUserData {
   String? email;
   String? avatar;
   String? status;
+  String? fcmID;
 
   ChatUserData({
     this.name,
@@ -35,6 +36,7 @@ class ChatUserData {
     this.email,
     this.avatar,
     this.status,
+    this.fcmID,
   });
 
   factory ChatUserData.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class ChatUserData {
       email: json['email'],
       avatar: json['avatar'],
       status: json['status'].toString(),
+      fcmID: json['fcm_id'] ?? "",
     );
   }
 
@@ -54,6 +57,7 @@ class ChatUserData {
       'email': email,
       'avatar': avatar,
       'status': status.toString(),
+      'fcm_id': fcmID ?? "",
     };
   }
 }

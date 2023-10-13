@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
-import 'package:flutter_chat_app/widgets/image_picker.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' as foundation;
@@ -143,7 +142,7 @@ class _ChatPageState extends State<ChatPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (scrollController.hasClients) {
         scrollController.animateTo(
-          scrollController.position.maxScrollExtent+800,
+          scrollController.position.maxScrollExtent + 800,
           duration: const Duration(milliseconds: 1),
           curve: Curves.easeInOut,
         );
@@ -220,9 +219,7 @@ class _ChatPageState extends State<ChatPage> {
                     child: Row(
                       children: [
                         InkWell(
-                          onTap: () async {
-                            await chooseMultipleImage();
-                          },
+                          onTap: () => chooseMultipleImage(),
                           child: SizedBox(
                             height: 40,
                             width: 40,
@@ -234,7 +231,6 @@ class _ChatPageState extends State<ChatPage> {
                             // Map<Permission, PermissionStatus> statuses = await [Permission.storage, Permission.camera].request();
                             // if (statuses[Permission.storage]!.isGranted && statuses[Permission.camera]!.isGranted) {
                             if (context.mounted) takeCameraPicture();
-                            // } else {}
                           },
                           child: SizedBox(
                             height: 40,
@@ -347,7 +343,7 @@ class _ChatPageState extends State<ChatPage> {
                           'No Recents',
                           style: TextStyle(fontSize: 20, color: Colors.black26),
                           textAlign: TextAlign.center,
-                        ), // Needs to be const Widget
+                        ), 
                         loadingIndicator: const SizedBox.shrink(),
                         tabIndicatorAnimDuration: kTabScrollDuration,
                         categoryIcons: const CategoryIcons(),

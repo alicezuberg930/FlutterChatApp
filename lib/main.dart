@@ -5,6 +5,7 @@ import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
+import 'package:flutter_chat_app/service/notification_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 
 void main() async {
@@ -22,6 +23,7 @@ void main() async {
   } else {
     await Firebase.initializeApp();
   }
+  await NotificationService().initializeNotification();
   runApp(const MyChatApp());
 }
 
@@ -35,6 +37,7 @@ class MyChatApp extends StatefulWidget {
 class _MyChatAppState extends State<MyChatApp> {
   bool isSignedIn = false;
   ChatUser? userData;
+  final navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -53,6 +56,7 @@ class _MyChatAppState extends State<MyChatApp> {
         scaffoldBackgroundColor: Colors.white,
       ),
       home: isSignedIn ? HomePage(user: userData!) : const LoginPage(),
+      navigatorKey: navigatorKey,
     );
   }
 }

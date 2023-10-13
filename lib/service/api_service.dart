@@ -148,7 +148,6 @@ class APIService {
         response = await http.post(Uri.parse(Constant.sendMessage), body: params);
         responseBody = json.decode(response.body);
       }
-      // print(responseBody.toString());
       if (response.statusCode == 200) {
         return Message.fromJson(responseBody);
       } else {
