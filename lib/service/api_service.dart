@@ -103,6 +103,8 @@ class APIService {
     try {
       final response = await http.get(Uri.parse("${Constant.getUserMessages}?conversation_id=$conversationId"));
       Map<String, dynamic> responseBody = json.decode(response.body);
+      print(Message.fromJson(responseBody).data!.reversed.first.toJson().toString());
+      print("${Constant.getUserMessages}?conversation_id=$conversationId");
       if (response.statusCode == 200) {
         return Message.fromJson(responseBody);
       } else {
@@ -127,15 +129,15 @@ class APIService {
     }
   }
 
-  static Future sendMessage(Map<String, String> params, {List<File>? photos}) async {
+  static Future sendMessage(Map<String, String> params, {List<File>? files}) async {
     try {
       dynamic response;
       Map<String, dynamic> responseBody;
-      if (photos != null) {
+      if (files != null) {
         var request = http.MultipartRequest('POST', Uri.parse(Constant.sendMessage));
         request.headers.addAll(Constant.headers);
-        for (File photo in photos) {
-          request.files.add(await http.MultipartFile.fromPath('photos[]', photo.path));
+        for (File file in files) {
+          request.files.add(await http.MultipartFile.fromPath('files[]', file.path));
         }
         request.fields['content'] = params['content']!;
         request.fields['sender_id'] = params['sender_id']!;

@@ -3,6 +3,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/model/message.dart';
@@ -57,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
     if (messageData != null) {
       if (context.mounted) {
         setState(() {
-          messageList = messageData.data;
+          messageList = messageData.data.reversed.toList();
         });
       }
     }
@@ -71,13 +72,37 @@ class _ChatPageState extends State<ChatPage> {
       'conversation_id': widget.conversationId,
     }).then((value) {
       getUserMessages();
-      scrollController.jumpTo(scrollController.position.maxScrollExtent);
+      scrollController.jumpTo(scrollController.position.minScrollExtent);
     });
+  }
+
+  chooseFile() async {
+    List<File> files = [];
+    FilePickerResult? selectedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'pdf', 'doc', 'txt'],
+    );
+    if (selectedFile != null) {
+      files.add(File(selectedFile.files.first.path!));
+      await APIService.sendMessage(
+        {
+          'content': chatController.text,
+          'sender_id': widget.userId,
+          'message_type': selectedFile.files.first.extension == "mp3" ? "audio" : "others",
+          'conversation_id': widget.conversationId,
+        },
+        files: files,
+      ).then((value) {
+        getUserMessages();
+        scrollController.jumpTo(scrollController.position.minScrollExtent);
+      });
+    }
   }
 
   chooseMultipleImage() async {
     List<File>? photos;
-    final selectedImages = await picker.pickMultiImage(imageQuality: 75);
+    final selectedImages = await picker.pickMultipleMedia(imageQuality: 75);
     if (selectedImages.isNotEmpty) {
       photos = selectedImages.map((e) => File(e.path)).toList();
       await APIService.sendMessage(
@@ -87,10 +112,10 @@ class _ChatPageState extends State<ChatPage> {
           'message_type': 'image',
           'conversation_id': widget.conversationId,
         },
-        photos: photos,
+        files: photos,
       ).then((value) {
         getUserMessages();
-        scrollController.jumpTo(scrollController.position.maxScrollExtent + 300);
+        scrollController.jumpTo(scrollController.position.minScrollExtent);
       });
     }
   }
@@ -107,10 +132,10 @@ class _ChatPageState extends State<ChatPage> {
             'message_type': 'image',
             'conversation_id': widget.conversationId,
           },
-          photos: photos,
+          files: photos,
         ).then((value) {
           getUserMessages();
-          scrollController.jumpTo(scrollController.position.maxScrollExtent + 300);
+          scrollController.jumpTo(scrollController.position.minScrollExtent);
         });
       }
     });
@@ -122,6 +147,7 @@ class _ChatPageState extends State<ChatPage> {
         : ScrollConfiguration(
             behavior: RemoveGlowingBehavior(),
             child: ListView.builder(
+              reverse: true,
               controller: scrollController,
               itemCount: messageList!.length,
               itemBuilder: (context, index) {
@@ -130,7 +156,8 @@ class _ChatPageState extends State<ChatPage> {
                   sender: messageList![index].name!,
                   sentbyme: widget.userId == messageList![index].senderId,
                   messageType: messageList![index].messageType!,
-                  photos: messageList![index].photos ?? "",
+                  files: messageList![index].photos ?? "",
+                  fileNames: messageList![index].fileNames ?? "",
                 );
               },
             ),
@@ -142,7 +169,7 @@ class _ChatPageState extends State<ChatPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (scrollController.hasClients) {
         scrollController.animateTo(
-          scrollController.position.maxScrollExtent + 800,
+          scrollController.position.minScrollExtent,
           duration: const Duration(milliseconds: 1),
           curve: Curves.easeInOut,
         );
@@ -219,6 +246,14 @@ class _ChatPageState extends State<ChatPage> {
                     child: Row(
                       children: [
                         InkWell(
+                          onTap: () => chooseFile(),
+                          child: SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: Center(child: Icon(Icons.file_copy, color: Theme.of(context).primaryColor)),
+                          ),
+                        ),
+                        InkWell(
                           onTap: () => chooseMultipleImage(),
                           child: SizedBox(
                             height: 40,
@@ -228,8 +263,6 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                         InkWell(
                           onTap: () async {
-                            // Map<Permission, PermissionStatus> statuses = await [Permission.storage, Permission.camera].request();
-                            // if (statuses[Permission.storage]!.isGranted && statuses[Permission.camera]!.isGranted) {
                             if (context.mounted) takeCameraPicture();
                           },
                           child: SizedBox(
@@ -343,7 +376,7 @@ class _ChatPageState extends State<ChatPage> {
                           'No Recents',
                           style: TextStyle(fontSize: 20, color: Colors.black26),
                           textAlign: TextAlign.center,
-                        ), 
+                        ),
                         loadingIndicator: const SizedBox.shrink(),
                         tabIndicatorAnimDuration: kTabScrollDuration,
                         categoryIcons: const CategoryIcons(),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
@@ -21,8 +22,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String email = "";
-  String password = "";
+  String? email;
+  String? password;
   final formkey = GlobalKey<FormState>();
 
   @override
@@ -134,7 +135,8 @@ class _LoginPageState extends State<LoginPage> {
   login() async {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
-      APIService.login({'email': email, 'password': password}).then((value) {
+      String? fcmID = await FirebaseMessaging.instance.getToken();
+      APIService.login({'email': email!, 'password': password!, 'fcm_id': fcmID!}).then((value) {
         if (value != null) {
           ChatUser user = value;
           if (user.status == "success") {
@@ -148,8 +150,8 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           UIHelpers.showSnackBar(context, Colors.red, "unidentified problem occurred");
         }
-        Loader.hide();
       });
+      Loader.hide();
     }
   }
 }

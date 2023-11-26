@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user.dart';
-import 'package:flutter_chat_app/screen/home_screen.dart';
 
 class GroupInfoPage extends StatefulWidget {
   final String groupId;
@@ -114,7 +112,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
     return StreamBuilder(
       stream: members,
       builder: (context, AsyncSnapshot snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.hasData) { 
           if (snapshot.data['members'] != null) {
             if (snapshot.data['members'].length > 0) {
               return ListView.builder(

@@ -30,6 +30,7 @@ class MessageData {
   String? messageType;
   dynamic photos;
   String? name;
+  dynamic fileNames;
 
   MessageData({
     this.id,
@@ -39,6 +40,7 @@ class MessageData {
     this.messageType,
     this.photos,
     this.name,
+    this.fileNames,
   });
 
   factory MessageData.fromJson(Map<String, dynamic> json) {
@@ -50,6 +52,7 @@ class MessageData {
       messageType: json['message_type'],
       photos: json['photos'],
       name: json['name'],
+      fileNames: json['file_names'],
     );
   }
 
@@ -62,6 +65,7 @@ class MessageData {
       'message_type': messageType,
       'photos': photos,
       'name': name,
+      'file_names': fileNames,
     };
   }
 }
