@@ -9,7 +9,7 @@ import 'package:flutter_chat_app/model/friend.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
-import 'package:flutter_chat_app/screen/profile_screen.dart';
+import 'package:flutter_chat_app/screen/my_profile_screen.dart';
 import 'package:flutter_chat_app/screen/search_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/widgets/conversation_tile.dart';
@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ListTile(
-            onTap: () => {UIHelpers.nextScreen(context, const ProfilePage())},
+            onTap: () => {UIHelpers.nextScreen(context, const MyProfileScreen())},
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.verified_user),
             title: const Text(
@@ -364,7 +364,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future cropImage(String path) async {
+  cropImage(String path) async {
     List<CropAspectRatioPreset> androidPreset = [
       CropAspectRatioPreset.square,
       CropAspectRatioPreset.ratio3x2,

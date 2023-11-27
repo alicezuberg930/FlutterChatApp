@@ -18,7 +18,6 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
     initializePushNotification();
     initializeLocalNotification();
-    print(await FirebaseMessaging.instance.getToken());
   }
 
   handleMessage(RemoteMessage? message) {
@@ -58,7 +57,6 @@ class NotificationService {
         NotificationDetails(android: notificationDetails),
         payload: jsonEncode(message.data),
       );
-      print("SOUDNDD  " + notificationDetails.sound!.sound);
     });
   }
 
@@ -98,5 +96,4 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
     NotificationDetails(android: notificationDetails),
     payload: jsonEncode(message.data),
   );
-  print("SOUDNDD  " + notificationDetails.sound!.sound);
 }

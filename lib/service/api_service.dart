@@ -103,8 +103,6 @@ class APIService {
     try {
       final response = await http.get(Uri.parse("${Constant.getUserMessages}?conversation_id=$conversationId"));
       Map<String, dynamic> responseBody = json.decode(response.body);
-      print(Message.fromJson(responseBody).data!.reversed.first.toJson().toString());
-      print("${Constant.getUserMessages}?conversation_id=$conversationId");
       if (response.statusCode == 200) {
         return Message.fromJson(responseBody);
       } else {

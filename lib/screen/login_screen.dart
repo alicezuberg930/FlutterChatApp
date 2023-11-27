@@ -142,7 +142,6 @@ class _LoginPageState extends State<LoginPage> {
           if (user.status == "success") {
             UIHelpers.showSnackBar(context, Colors.green, user.message);
             SharedPreference.saveUserData(jsonEncode(user));
-            Future.delayed(const Duration(seconds: 2));
             UIHelpers.nextScreenReplace(context, HomePage(user: user));
           } else {
             UIHelpers.showSnackBar(context, Colors.red, user.message);

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+class MyProfileScreen extends StatefulWidget {
+  const MyProfileScreen({Key? key}) : super(key: key);
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<MyProfileScreen> createState() => _MyProfileScreenState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _MyProfileScreenState extends State<MyProfileScreen> {
   ChatUser? user;
 
   @override
