@@ -8,5 +8,5 @@ class Constants {
   static String messagingSenderId = "1096719736898";
   static String appId = "1:1096719736898:web:a415770c502c10edd6cddb";
   static String measurementId = "G-XFZ68P1M3E";
-  static const Color primaryColor = Color(0xFFee7b64);
+  static const Color primaryColor = Color.fromARGB(255, 39, 140, 255);
 }

@@ -11,7 +11,9 @@ import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/screen/my_profile_screen.dart';
 import 'package:flutter_chat_app/screen/search_screen.dart';
+import 'package:flutter_chat_app/screen/settings_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:flutter_chat_app/widgets/conversation_tile.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -34,6 +36,8 @@ class _HomePageState extends State<HomePage> {
   Stream? userMetaData;
   String? groupName;
   bool _isloading = false;
+  bool isDarkMode = SharedPreference.getDarkMode() ?? false;
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -153,6 +157,7 @@ class _HomePageState extends State<HomePage> {
 
   customDrawerWidget() {
     return Drawer(
+      backgroundColor: isDarkMode ? const Color.fromARGB(255, 40, 40, 40) : Colors.white,
       child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 20),
         children: [
@@ -164,15 +169,15 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(100),
                   child: Image(
                     image: NetworkImage(widget.user.data!.avatar!),
-                    height: 150,
-                    width: 150,
+                    height: 120,
+                    width: 120,
                     fit: BoxFit.cover,
                     filterQuality: FilterQuality.high,
                   ),
                 ),
                 Positioned(
-                  bottom: 10,
-                  right: 10,
+                  bottom: 5,
+                  right: 5,
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -181,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: InkWell(
                       onTap: () => showImagePicker(context, chooseImage),
-                      child: const Icon(Icons.camera_alt, color: Colors.black, size: 24),
+                      child: const Icon(Icons.camera_alt, color: Constants.primaryColor, size: 20),
                     ),
                   ),
                 ),
@@ -192,37 +197,58 @@ class _HomePageState extends State<HomePage> {
           Text(
             widget.user.data!.name!,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
           ),
-          const SizedBox(height: 30),
-          const Divider(height: 2),
+          const SizedBox(height: 20),
+          Divider(height: 4, color: isDarkMode ? Colors.white : Colors.black),
           ListTile(
             onTap: () => {},
-            selectedColor: Theme.of(context).primaryColor,
             selected: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-            leading: const Icon(Icons.group),
-            title: const Text(
+            leading: const Icon(Icons.group, color: Constants.primaryColor),
+            title: Text(
               "Nhóm",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
             ),
           ),
           ListTile(
             onTap: () => {UIHelpers.nextScreen(context, const MyProfileScreen())},
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-            leading: const Icon(Icons.verified_user),
-            title: const Text(
+            leading: const Icon(Icons.verified_user, color: Constants.primaryColor),
+            title: Text(
               "Personal information",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
             ),
           ),
           ListTile(
-            onTap: () => {},
+            onTap: () {
+              toggleDrawer();
+              UIHelpers.nextScreen(
+                context,
+                const SettingsScreen(),
+                action: (value) {
+                  setState(() => isDarkMode = value);
+                },
+              );
+            },
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-            leading: const Icon(Icons.settings),
-            title: const Text(
+            leading: const Icon(Icons.settings, color: Constants.primaryColor),
+            title: Text(
               "Settings",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
             ),
           ),
           ListTile(
@@ -271,10 +297,13 @@ class _HomePageState extends State<HomePage> {
               ),
             },
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-            leading: const Icon(Icons.exit_to_app),
-            title: const Text(
+            leading: const Icon(Icons.exit_to_app, color: Constants.primaryColor),
+            title: Text(
               "Log out",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
             ),
           ),
         ],
@@ -343,7 +372,11 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           margin: const EdgeInsets.only(top: 10),
                           width: 80,
-                          child: Text(friendList![index].name!, textAlign: TextAlign.center),
+                          child: Text(
+                            friendList![index].name!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black45),
+                          ),
                         )
                       ],
                     ),
@@ -418,28 +451,45 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  toggleDrawer() async {
+    if (scaffoldKey.currentState!.isDrawerOpen) {
+      scaffoldKey.currentState!.openEndDrawer();
+    } else {
+      scaffoldKey.currentState!.openDrawer();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
         appBar: AppBar(
           actions: [
             IconButton(
               onPressed: () => UIHelpers.nextScreen(context, const SearchPage()),
-              icon: const Icon(Icons.search),
+              icon: const Icon(
+                Icons.search,
+              ),
             )
           ],
           elevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Tiến's Messenger",
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+          title: Text(
+            "Your chat",
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
           ),
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
+          iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black),
         ),
         drawer: customDrawerWidget(),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => {popUpDiolog(context)},
+          onPressed: () => popUpDiolog(context),
           elevation: 0,
           backgroundColor: Theme.of(context).primaryColor,
           child: const Icon(Icons.add, color: Colors.white, size: 30),

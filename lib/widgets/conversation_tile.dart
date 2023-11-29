@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/conversation.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
@@ -12,6 +13,7 @@ class ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = SharedPreference.getDarkMode() ?? false;
     return InkWell(
       onLongPress: () {},
       onTap: () {
@@ -38,11 +40,11 @@ class ConversationTile extends StatelessWidget {
           ),
           title: Text(
             conversationData!.type! == "group" ? conversationData!.groupName! : conversationData!.receiverName!,
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black45),
+            style: TextStyle(fontWeight: FontWeight.bold, color: isDarkMode ? Colors.grey : Colors.black45),
           ),
           subtitle: Text(
             conversationData!.recentMessage!,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.grey : Colors.black45),
           ),
         ),
       ),

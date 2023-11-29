@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_app/model/user.dart';
 
 class GroupInfoPage extends StatefulWidget {
   final String groupId;
@@ -46,7 +45,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                       ),
                       IconButton(
                         onPressed: () async {
-                          ChatUser? chatUser;
+                          // ChatUser? chatUser;
                         },
                         icon: const Icon(Icons.done, color: Colors.green),
                       ),

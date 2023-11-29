@@ -10,6 +10,20 @@ import 'package:flutter_chat_app/model/user.dart';
 import 'package:http/http.dart' as http;
 
 class APIService {
+  static Future getPublicIP() async {
+    try {
+      const url = 'https://api.ipify.org';
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        return response.body;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
   static Future login(Map<String, String>? params) async {
     try {
       final response = await http.post(Uri.parse(Constant.login), body: params);
@@ -99,7 +113,7 @@ class APIService {
     }
   }
 
-  static Future getUserMessages(String conversationId) async {
+  static Future<Message?> getUserMessages(String conversationId) async {
     try {
       final response = await http.get(Uri.parse("${Constant.getUserMessages}?conversation_id=$conversationId"));
       Map<String, dynamic> responseBody = json.decode(response.body);

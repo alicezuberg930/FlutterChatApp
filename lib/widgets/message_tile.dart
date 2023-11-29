@@ -1,11 +1,12 @@
 // ignore_for_file: must_be_immutable
 
-import 'dart:convert';
 import 'dart:io';
 
 import "package:flutter/material.dart";
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:flutter_chat_app/widgets/seekbar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -44,6 +45,7 @@ class _MessageTileState extends State<MessageTile> {
   AudioPlayer? audioPlayer;
   Stream<SeekBarData>? seekBarDataStream;
   String? size;
+  bool isDarkMode = SharedPreference.getDarkMode() ?? false;
 
   @override
   void initState() {
@@ -71,16 +73,27 @@ class _MessageTileState extends State<MessageTile> {
   initializeAudio() async {
     audioPlayer = AudioPlayer();
     await audioPlayer!.setUrl(widget.files[0]);
-    seekBarDataStream = rxdart.Rx.combineLatest2<Duration, Duration?, SeekBarData>(
-      audioPlayer!.positionStream,
-      audioPlayer!.durationStream,
-      (Duration position, Duration? duration) {
-        return SeekBarData(
-          position: position,
-          duration: duration ?? Duration.zero,
-        );
-      },
-    );
+    audioPlayer!.playerStateStream.listen((event) {
+      if (event.processingState == ProcessingState.completed) {
+        setState(() {
+          isPlayMusic = false;
+          audioPlayer!.seek(Duration.zero);
+          audioPlayer!.pause();
+        });
+      }
+    });
+    setState(() {
+      seekBarDataStream = rxdart.Rx.combineLatest2<Duration, Duration?, SeekBarData>(
+        audioPlayer!.positionStream,
+        audioPlayer!.durationStream,
+        (Duration position, Duration? duration) {
+          return SeekBarData(
+            position: position,
+            duration: duration ?? Duration.zero,
+          );
+        },
+      );
+    });
   }
 
   @override
@@ -128,11 +141,38 @@ class _MessageTileState extends State<MessageTile> {
       return;
     }
     if (fileSize > 1024) {
+      setState(() {
+        size = '$fileSize B';
+      });
       size = '${(fileSize / 1024).toStringAsPrecision(3)} KB';
     }
     if (fileSize > 1048576) {
-      size = '${(fileSize / 1024 / 1024).toStringAsPrecision(3)} MB';
+      setState(() {
+        size = '${(fileSize / 1024 / 1024).toStringAsPrecision(3)} MB';
+      });
     }
+  }
+
+  showMessageModal({Function? download}) {
+    showModalBottomSheet(
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              onTap: () {
+                download;
+                Navigator.pop(context);
+              },
+              leading: const Icon(Icons.download),
+              title: const Text("Download"),
+            )
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -229,7 +269,7 @@ class _MessageTileState extends State<MessageTile> {
                       iconSize: 70,
                       icon: Icon(
                         isPlaying ? Icons.pause : Icons.play_arrow,
-                        color: Theme.of(context).primaryColor,
+                        color: Constants.primaryColor,
                       ),
                     )
                   ],
@@ -250,12 +290,15 @@ class _MessageTileState extends State<MessageTile> {
                           topRight: Radius.circular(20),
                           bottomRight: Radius.circular(20),
                         ),
-                  color: widget.sentbyme ? Colors.blue : Colors.grey[300],
+                  color: widget.sentbyme ? Colors.blue : Colors.grey[400],
                 ),
                 child: Text(
                   widget.content,
                   textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 16, color: widget.sentbyme ? Colors.white : Colors.black),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: widget.sentbyme ? Colors.white : (isDarkMode ? Colors.white : Colors.black),
+                  ),
                 ),
               ),
             if (widget.messageType == "audio")
@@ -273,43 +316,48 @@ class _MessageTileState extends State<MessageTile> {
                           topRight: Radius.circular(20),
                           bottomRight: Radius.circular(20),
                         ),
-                  color: widget.sentbyme ? Colors.blue : Colors.grey[300],
+                  color: widget.sentbyme ? Colors.blue : Colors.grey[400],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          if (isPlayMusic) {
-                            isPlayMusic = false;
-                            audioPlayer!.pause();
-                          } else {
-                            isPlayMusic = true;
-                            audioPlayer!.play();
-                          }
-                        });
-                      },
-                      child: Icon(
-                        isPlayMusic ? Icons.pause : Icons.play_arrow,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: StreamBuilder<SeekBarData>(
-                        stream: seekBarDataStream,
-                        builder: (context, snapshot) {
-                          final positionData = snapshot.data;
-                          return SeekBar(
-                            position: positionData?.position ?? Duration.zero,
-                            duration: positionData?.duration ?? Duration.zero,
-                            onchangeEnd: audioPlayer!.seek,
-                          );
+                child: InkWell(
+                  onLongPress: () async {
+                    showMessageModal(download: await downloadFile(widget.files[0].toString(), widget.fileNames[0].toString()));
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            if (isPlayMusic) {
+                              isPlayMusic = false;
+                              audioPlayer!.pause();
+                            } else {
+                              isPlayMusic = true;
+                              audioPlayer!.play();
+                            }
+                          });
                         },
+                        child: Icon(
+                          isPlayMusic ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: StreamBuilder<SeekBarData>(
+                          stream: seekBarDataStream,
+                          builder: (context, snapshot) {
+                            final positionData = snapshot.data;
+                            return SeekBar(
+                              position: positionData?.position ?? Duration.zero,
+                              duration: positionData?.duration ?? Duration.zero,
+                              onchangeEnd: audioPlayer!.seek,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             if (widget.messageType == "others")
@@ -327,41 +375,44 @@ class _MessageTileState extends State<MessageTile> {
                           topRight: Radius.circular(20),
                           bottomRight: Radius.circular(20),
                         ),
-                  color: widget.sentbyme ? Colors.blue : Colors.grey[300],
+                  color: widget.sentbyme ? Colors.blue : Colors.grey[400],
                 ),
                 child: InkWell(
+                  onLongPress: () async {
+                    showMessageModal(download: await downloadFile(widget.files[0].toString(), widget.fileNames[0].toString()));
+                  },
                   onTap: () {
-                    showDialog(
-                      barrierDismissible: false,
-                      context: context,
-                      builder: (context) {
-                        return StatefulBuilder(
-                          builder: (context, setState) {
-                            return AlertDialog(
-                              title: const Text('Download file?', textAlign: TextAlign.left),
-                              actions: [
-                                ElevatedButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).primaryColor,
-                                    padding: const EdgeInsets.all(10),
-                                  ),
-                                  child: const Text('No'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => downloadFile(widget.files[0].toString(), widget.fileNames[0].toString()),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).primaryColor,
-                                    padding: const EdgeInsets.all(10),
-                                  ),
-                                  child: const Text('Yes'),
-                                )
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    );
+                    // showDialog(
+                    //   barrierDismissible: false,
+                    //   context: context,
+                    //   builder: (context) {
+                    //     return StatefulBuilder(
+                    //       builder: (context, setState) {
+                    //         return AlertDialog(
+                    //           title: const Text('Download file?', textAlign: TextAlign.left),
+                    //           actions: [
+                    //             ElevatedButton(
+                    //               onPressed: () => Navigator.of(context).pop(),
+                    //               style: ElevatedButton.styleFrom(
+                    //                 backgroundColor: Theme.of(context).primaryColor,
+                    //                 padding: const EdgeInsets.all(10),
+                    //               ),
+                    //               child: const Text('No'),
+                    //             ),
+                    //             ElevatedButton(
+                    //               onPressed: () => downloadFile(widget.files[0].toString(), widget.fileNames[0].toString()),
+                    //               style: ElevatedButton.styleFrom(
+                    //                 backgroundColor: Theme.of(context).primaryColor,
+                    //                 padding: const EdgeInsets.all(10),
+                    //               ),
+                    //               child: const Text('Yes'),
+                    //             )
+                    //           ],
+                    //         );
+                    //       },
+                    //     );
+                    //   },
+                    // );
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -376,11 +427,17 @@ class _MessageTileState extends State<MessageTile> {
                               widget.fileNames[0].toString(),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 16, color: widget.sentbyme ? Colors.white : Colors.black),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: widget.sentbyme ? Colors.white : (isDarkMode ? Colors.white : Colors.black),
+                              ),
                             ),
                             Text(
                               size ?? "0 B",
-                              style: TextStyle(fontSize: 12, color: widget.sentbyme ? Colors.white : Colors.black),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: widget.sentbyme ? Colors.white : (isDarkMode ? Colors.white : Colors.black),
+                              ),
                             ),
                           ],
                         ),

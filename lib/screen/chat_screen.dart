@@ -1,11 +1,11 @@
 // ignore_for_file: must_be_immutable
 
-import 'dart:developer';
 import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
+import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
@@ -42,6 +42,7 @@ class _ChatPageState extends State<ChatPage> {
   bool isControllerEmpty = true;
   bool showEmojiPicker = false;
   FocusNode focusNode = FocusNode();
+  bool isDarkMode = SharedPreference.getDarkMode() ?? false;
 
   @override
   void initState() {
@@ -54,13 +55,10 @@ class _ChatPageState extends State<ChatPage> {
 
   getUserMessages() async {
     var messageData = await APIService.getUserMessages(widget.conversationId);
-    log(messageData.toJson().toString());
-    if (messageData != null) {
-      if (context.mounted) {
-        setState(() {
-          messageList = messageData.data.reversed.toList();
-        });
-      }
+    if (messageData != null && context.mounted && messageData.data != null) {
+      setState(() {
+        messageList = messageData.data!.reversed.toList();
+      });
     }
   }
 
@@ -177,9 +175,10 @@ class _ChatPageState extends State<ChatPage> {
     });
     return SafeArea(
       child: Scaffold(
+        backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
         appBar: AppBar(
           centerTitle: true,
-          elevation: 0,
+          elevation: 5,
           title: Row(
             children: [
               ClipRRect(
@@ -196,18 +195,29 @@ class _ChatPageState extends State<ChatPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.conversationName, style: const TextStyle(fontSize: 18)),
+                  Text(
+                    widget.conversationName,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   if (widget.type == "friend")
                     Text(
                       widget.status == "0" ? "offline" : "online",
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.grey[300]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
                     ),
                 ],
               ),
             ],
           ),
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
+          iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black),
           actions: [
             IconButton(
               onPressed: () {},

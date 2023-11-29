@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class UIHelpers {
-  static nextScreen(context, page) {
-    Navigator.of(context).push(
+  static nextScreen(context, page, {void Function(dynamic)? action}) {
+    Navigator.of(context)
+        .push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => page,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -14,7 +15,10 @@ class UIHelpers {
           return SlideTransition(position: offsetAnimation, child: child);
         },
       ),
-    );
+    )
+        .then((value) {
+      action!(value);
+    });
   }
 
   static nextScreenReplace(context, page) {

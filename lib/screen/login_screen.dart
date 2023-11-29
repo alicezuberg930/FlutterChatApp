@@ -136,7 +136,8 @@ class _LoginPageState extends State<LoginPage> {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
       String? fcmID = await FirebaseMessaging.instance.getToken();
-      APIService.login({'email': email!, 'password': password!, 'fcm_id': fcmID!}).then((value) {
+      String? ipAddress = await APIService.getPublicIP();
+      APIService.login({'email': email!, 'password': password!, 'fcm_id': fcmID!, 'ip_address': ipAddress!}).then((value) {
         if (value != null) {
           ChatUser user = value;
           if (user.status == "success") {

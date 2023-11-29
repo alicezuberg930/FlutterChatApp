@@ -9,6 +9,7 @@ class SharedPreference {
   static String useremailKey = "USEREMAILKEY";
   static String avatarKey = "AVATARKEY";
   static String userDataKey = "USERDATA";
+  static String darkModeKey = "DARKMODE";
 
   static late SharedPreferences pref;
 
@@ -25,16 +26,8 @@ class SharedPreference {
     await pref.setString(userDataKey, data);
   }
 
-  static saveUserName(String username) async {
-    await pref.setString(usernameKey, username);
-  }
-
-  static saveUserEmail(String email) async {
-    await pref.setString(useremailKey, email);
-  }
-
-  static saveUserAvatar(String url) async {
-    await pref.setString(avatarKey, url);
+  static saveDarkMode(bool darkMode) async {
+    await pref.setBool(darkModeKey, darkMode);
   }
 
   //Đọc dữ liệu từ shared preferences
@@ -51,5 +44,10 @@ class SharedPreference {
     if (userData == null) return null;
     Map<String, dynamic> userMap = json.decode(userData);
     return ChatUser.fromJson(userMap);
+  }
+
+  static bool? getDarkMode() {
+    bool? darkMode = pref.getBool(darkModeKey);
+    return darkMode;
   }
 }

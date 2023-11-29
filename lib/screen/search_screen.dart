@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:flutter_chat_app/widgets/user_tile.dart';
 
 class SearchPage extends StatefulWidget {
@@ -53,7 +54,7 @@ class _SearchPageState extends State<SearchPage> {
               border: InputBorder.none,
             ),
           ),
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Constants.primaryColor,
         ),
         body: isloading == true
             ? Container(
