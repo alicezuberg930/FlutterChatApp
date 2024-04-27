@@ -10,6 +10,7 @@ class SharedPreference {
   static String avatarKey = "AVATARKEY";
   static String userDataKey = "USERDATA";
   static String darkModeKey = "DARKMODE";
+  static String bearerToken = "BEARERTOKEN";
 
   static late SharedPreferences pref;
 
@@ -24,6 +25,10 @@ class SharedPreference {
 
   static saveUserData(String data) async {
     await pref.setString(userDataKey, data);
+  }
+
+  static saveUserToken(String data) async {
+    await pref.setString(bearerToken, data);
   }
 
   static saveDarkMode(bool darkMode) async {
@@ -49,5 +54,9 @@ class SharedPreference {
   static bool? getDarkMode() {
     bool? darkMode = pref.getBool(darkModeKey);
     return darkMode;
+  }
+
+  static String? getUserToken() {
+    return pref.getString(bearerToken);
   }
 }

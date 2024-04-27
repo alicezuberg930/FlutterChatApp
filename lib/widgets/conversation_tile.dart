@@ -3,13 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
-import 'package:flutter_chat_app/model/conversation.dart';
+import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
 
 class ConversationTile extends StatelessWidget {
-  ConversationData? conversationData;
+  UserConversation? userConversation;
 
-  ConversationTile({Key? key, this.conversationData}) : super(key: key);
+  ConversationTile({Key? key, this.userConversation}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,13 +19,7 @@ class ConversationTile extends StatelessWidget {
       onTap: () {
         UIHelpers.nextScreen(
           context,
-          ChatPage(
-            conversationAvatar: conversationData!.type! == "group" ? conversationData!.groupAvatar! : conversationData!.userAvatar!,
-            conversationId: conversationData!.conversationId!,
-            conversationName: conversationData!.type! == "group" ? conversationData!.groupName! : conversationData!.receiverName!,
-            type: conversationData!.type!,
-            userId: conversationData!.userId!,
-          ),
+          ChatPage(conversationId: userConversation!.conversationId!),
         );
       },
       child: Container(
@@ -34,16 +28,17 @@ class ConversationTile extends StatelessWidget {
         child: ListTile(
           leading: CircleAvatar(
             radius: 30,
+            backgroundColor: Colors.grey[200],
             backgroundImage: NetworkImage(
-              conversationData!.type! == "group" ? conversationData!.groupAvatar! : conversationData!.userAvatar!,
+              userConversation!.group != null ? userConversation!.group!.avatar! : userConversation!.receiver!.avatar!,
             ),
           ),
           title: Text(
-            conversationData!.type! == "group" ? conversationData!.groupName! : conversationData!.receiverName!,
+            userConversation!.group != null ? userConversation!.group!.groupName! : userConversation!.receiver!.name!,
             style: TextStyle(fontWeight: FontWeight.bold, color: isDarkMode ? Colors.grey : Colors.black45),
           ),
           subtitle: Text(
-            conversationData!.recentMessage!,
+            userConversation!.recentMessage!,
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.grey : Colors.black45),
           ),
         ),

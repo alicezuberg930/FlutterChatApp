@@ -78,7 +78,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         onChanged: (value) => {setState(() => email = value)},
                         validator: (value) {
-                          if (emailValidator(value!) == false) {
+                          if (RegularExpression.emailValidator(value!) == false) {
                             return "Email is invalid";
                           } else {
                             return null;
@@ -113,7 +113,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
-                          onPressed: () => {register()},
+                          onPressed: () => register(),
                           child: const Text(
                             "Register",
                             style: TextStyle(color: Colors.white, fontSize: 16),
@@ -148,16 +148,19 @@ class _RegisterPageState extends State<RegisterPage> {
   register() async {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
-      await APIService.register({"fullname": fullname, "email": email, "password": password}).then((value) async {
+      String? ipAddress = await APIService.getPublicIP();
+      await APIService.register(
+        {"fullname": fullname, "email": email, "password": password, "ip_address": ipAddress!},
+      ).then((value) async {
         if (value != null) {
           ChatUser user = value;
           if (user.status == "success") {
-            UIHelpers.showSnackBar(context, Colors.green, user.message);
+            UIHelpers.showSnackBar(context, Colors.green, value["message"]);
             SharedPreference.saveUserData(jsonEncode(user));
             Future.delayed(const Duration(seconds: 2));
             UIHelpers.nextScreenReplace(context, HomePage(user: user));
           } else {
-            UIHelpers.showSnackBar(context, Colors.red, user.message);
+            UIHelpers.showSnackBar(context, Colors.red, value["message"]);
           }
         } else {
           UIHelpers.showSnackBar(context, Colors.red, value);

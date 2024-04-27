@@ -7,28 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/message.dart';
+import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' as foundation;
 
 class ChatPage extends StatefulWidget {
-  final String conversationId;
-  final String conversationName;
-  final String conversationAvatar;
-  final String type;
-  final String userId;
-  String? status;
+  final int conversationId;
 
-  ChatPage({
-    Key? key,
-    required this.userId,
-    required this.conversationId,
-    required this.conversationName,
-    required this.conversationAvatar,
-    required this.type,
-    this.status,
-  }) : super(key: key);
+  const ChatPage({Key? key, required this.conversationId}) : super(key: key);
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -38,11 +26,13 @@ class _ChatPageState extends State<ChatPage> {
   ScrollController scrollController = ScrollController();
   TextEditingController chatController = TextEditingController();
   ImagePicker picker = ImagePicker();
-  List<MessageData>? messageList;
+  List<Message>? messageList;
   bool isControllerEmpty = true;
   bool showEmojiPicker = false;
   FocusNode focusNode = FocusNode();
   bool isDarkMode = SharedPreference.getDarkMode() ?? false;
+  UserConversation? userConversation;
+  APIService apiService = APIService();
 
   @override
   void initState() {
@@ -54,20 +44,21 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   getUserMessages() async {
-    var messageData = await APIService.getUserMessages(widget.conversationId);
-    if (messageData != null && context.mounted && messageData.data != null) {
-      setState(() {
-        messageList = messageData.data!.reversed.toList();
-      });
-    }
+    userConversation = await apiService.getUserConversationDetails(widget.conversationId);
+    // var messageData = await APIService.getUserMessages(widget.conversationId);
+    // if (messageData != null && context.mounted && messageData != null) {
+    //   setState(() {
+    //     messageList = messageData.reversed.toList();
+    //   });
+    // }
   }
 
   sendMessage(String message) async {
     await APIService.sendMessage({
       'content': message,
-      'sender_id': widget.userId,
+      'sender_id': userConversation!.userId!,
       'message_type': 'text',
-      'conversation_id': widget.conversationId,
+      'conversation_id': widget.conversationId.toString(),
     }).then((value) {
       getUserMessages();
       scrollController.jumpTo(scrollController.position.minScrollExtent);
@@ -86,9 +77,9 @@ class _ChatPageState extends State<ChatPage> {
       await APIService.sendMessage(
         {
           'content': chatController.text,
-          'sender_id': widget.userId,
+          'sender_id': userConversation!.userId!,
           'message_type': selectedFile.files.first.extension == "mp3" ? "audio" : "others",
-          'conversation_id': widget.conversationId,
+          'conversation_id': userConversation!.conversationId!.toString(),
         },
         files: files,
       ).then((value) {
@@ -106,9 +97,9 @@ class _ChatPageState extends State<ChatPage> {
       await APIService.sendMessage(
         {
           'content': chatController.text,
-          'sender_id': widget.userId,
+          'sender_id': userConversation!.userId.toString(),
           'message_type': 'image',
-          'conversation_id': widget.conversationId,
+          'conversation_id': userConversation!.conversationId.toString(),
         },
         files: photos,
       ).then((value) {
@@ -126,9 +117,9 @@ class _ChatPageState extends State<ChatPage> {
         APIService.sendMessage(
           {
             'content': chatController.text,
-            'sender_id': widget.userId,
+            'sender_id': userConversation!.userId!,
             'message_type': 'image',
-            'conversation_id': widget.conversationId,
+            'conversation_id': userConversation!.conversationId.toString(),
           },
           files: photos,
         ).then((value) {
@@ -152,7 +143,7 @@ class _ChatPageState extends State<ChatPage> {
                 return MessageTile(
                   content: messageList![index].content ?? "",
                   sender: messageList![index].name!,
-                  sentbyme: widget.userId == messageList![index].senderId,
+                  sentbyme: userConversation!.userId == messageList![index].senderId,
                   messageType: messageList![index].messageType!,
                   files: messageList![index].photos ?? "",
                   fileNames: messageList![index].fileNames ?? "",
@@ -184,7 +175,7 @@ class _ChatPageState extends State<ChatPage> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(100),
                 child: Image(
-                  image: NetworkImage(widget.conversationAvatar),
+                  image: NetworkImage(userConversation!.group!.avatar ?? userConversation!.receiver!.avatar!),
                   height: 40,
                   width: 40,
                   fit: BoxFit.cover,
@@ -196,22 +187,22 @@ class _ChatPageState extends State<ChatPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.conversationName,
+                    userConversation!.group!.groupName ?? userConversation!.receiver!.name!,
                     style: TextStyle(
                       fontSize: 18,
                       color: isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  if (widget.type == "friend")
-                    Text(
-                      widget.status == "0" ? "offline" : "online",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: isDarkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
+                  // if (widget.type == "friend")
+                  //   Text(
+                  //     widget.status == "0" ? "offline" : "online",
+                  //     style: TextStyle(
+                  //       fontSize: 12,
+                  //       fontWeight: FontWeight.w400,
+                  //       color: isDarkMode ? Colors.white : Colors.black,
+                  //     ),
+                  //   ),
                 ],
               ),
             ],
@@ -367,7 +358,10 @@ class _ChatPageState extends State<ChatPage> {
                       },
                       config: Config(
                         columns: 7,
-                        emojiSizeMax: 32 * (foundation.defaultTargetPlatform == TargetPlatform.iOS ? 1.30 : 1.0), // Issue: https://github.com/flutter/flutter/issues/28894
+                        emojiSizeMax: 32 *
+                            (foundation.defaultTargetPlatform == TargetPlatform.iOS
+                                ? 1.30
+                                : 1.0), // Issue: https://github.com/flutter/flutter/issues/28894
                         verticalSpacing: 0,
                         horizontalSpacing: 0,
                         gridPadding: EdgeInsets.zero,

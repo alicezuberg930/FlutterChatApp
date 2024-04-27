@@ -42,7 +42,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(100),
                 child: Image(
-                  image: NetworkImage(user!.data!.avatar!),
+                  image: NetworkImage(user!.avatar!),
                   height: 150,
                   width: 150,
                   fit: BoxFit.cover,
@@ -50,7 +50,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 ),
               ),
               Text(
-                user!.data!.name!,
+                user!.name!,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
             ],

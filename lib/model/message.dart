@@ -1,28 +1,4 @@
 class Message {
-  String? status;
-  String? message;
-  List<MessageData>? data;
-
-  Message({this.status, this.message, required this.data});
-
-  factory Message.fromJson(Map<String, dynamic> json) {
-    return Message(
-      status: json['status'],
-      message: json['message'],
-      data: json['data'] != null ? List<MessageData>.from(json["data"].map((x) => MessageData.fromJson(x))) : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'status': status,
-      'message': message,
-      'data': data != null ? data!.map((v) => v.toJson()).toList() : null,
-    };
-  }
-}
-
-class MessageData {
   String? id;
   String? content;
   String? senderId;
@@ -32,7 +8,7 @@ class MessageData {
   String? name;
   dynamic fileNames;
 
-  MessageData({
+  Message({
     this.id,
     this.content,
     this.senderId,
@@ -43,8 +19,8 @@ class MessageData {
     this.fileNames,
   });
 
-  factory MessageData.fromJson(Map<String, dynamic> json) {
-    return MessageData(
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
       id: json['id'].toString(),
       content: json['content'],
       senderId: json['sender_id'].toString(),

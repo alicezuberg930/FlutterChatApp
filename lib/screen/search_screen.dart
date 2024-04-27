@@ -15,7 +15,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   String? searchString;
   bool? isloading;
-  List<ChatUserData>? userList;
+  List<ChatUser>? userList;
 
   @override
   void initState() {

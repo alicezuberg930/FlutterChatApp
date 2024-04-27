@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
-import 'package:flutter_chat_app/model/conversation.dart';
-import 'package:flutter_chat_app/model/friend.dart';
 import 'package:flutter_chat_app/model/user.dart';
+import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/screen/my_profile_screen.dart';
@@ -28,35 +27,37 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   ImagePicker picker = ImagePicker();
-  List<ConversationData>? conversationList;
-  List<FriendData>? friendList;
+  List<UserConversation>? userConversationList;
+  List<ChatUser>? friendList;
   String? email;
   String groupAvatar = "";
   String friendAvatar = "";
   Stream? userMetaData;
-  String? groupName;
+  TextEditingController groupNameController = TextEditingController();
   bool _isloading = false;
   bool isDarkMode = SharedPreference.getDarkMode() ?? false;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  APIService? apiService = APIService();
 
   @override
   void initState() {
     getUserConversations();
-    getUserFriends();
+    // getUserFriends();
     super.initState();
   }
 
   getUserConversations() async {
-    var conversationData = await APIService.getUserConversation(widget.user.data!.id!);
+    var conversationData = await apiService!.getUserConversation();
+    print("aaaa" + conversationData.toString());
     if (conversationData != null) {
       setState(() {
-        conversationList = conversationData.data;
+        userConversationList = conversationData;
       });
     }
   }
 
   getUserFriends() async {
-    var friendData = await APIService.getUserFriends(widget.user.data!.id!);
+    var friendData = await APIService.getUserFriends(widget.user.id!);
     if (friendData != null) {
       setState(() {
         friendList = friendData.data;
@@ -81,7 +82,7 @@ class _HomePageState extends State<HomePage> {
                           child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                         )
                       : TextField(
-                          onChanged: (value) => {setState(() => groupName = value)},
+                          controller: groupNameController,
                           decoration: InputDecoration(
                             enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).primaryColor),
@@ -110,12 +111,22 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (groupName != "") {
+                    if (groupNameController.text.isNotEmpty) {
                       setState(() {
                         _isloading = true;
                       });
-                      Navigator.of(context).pop();
-                      UIHelpers.showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
+                      await APIService.createGroup({
+                        "group_name": groupNameController.text,
+                        "admin_id": widget.user.id,
+                      });
+                      groupNameController.clear();
+                      setState(() {
+                        _isloading = false;
+                      });
+                      if (mounted) {
+                        Navigator.of(context).pop();
+                        UIHelpers.showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -132,7 +143,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  noGroupWidget() {
+  noConversationWidget() {
     return Container(
       margin: const EdgeInsets.only(top: 20),
       alignment: Alignment.center,
@@ -168,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(100),
                   child: Image(
-                    image: NetworkImage(widget.user.data!.avatar!),
+                    image: NetworkImage(widget.user.avatar!),
                     height: 120,
                     width: 120,
                     fit: BoxFit.cover,
@@ -195,7 +206,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 15),
           Text(
-            widget.user.data!.name!,
+            widget.user.name!,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.bold,
@@ -259,8 +270,8 @@ class _HomePageState extends State<HomePage> {
                 builder: (context) {
                   return AlertDialog(
                     elevation: 5,
-                    title: Row(
-                      children: const [
+                    title: const Row(
+                      children: [
                         Icon(Icons.warning),
                         SizedBox(width: 5),
                         Text(
@@ -312,17 +323,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   conversationsListWidget() {
-    return conversationList == null
-        ? noGroupWidget()
+    return userConversationList == null
+        ? noConversationWidget()
         : ScrollConfiguration(
             behavior: RemoveGlowingBehavior(),
             child: RefreshIndicator(
               onRefresh: () => getUserConversations(),
               child: ListView.builder(
-                itemCount: conversationList!.length,
+                itemCount: userConversationList!.length,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  return ConversationTile(conversationData: conversationList![index]);
+                  return ConversationTile(userConversation: userConversationList![index]);
                 },
               ),
             ),
@@ -342,17 +353,11 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    UIHelpers.nextScreen(
-                      context,
-                      ChatPage(
-                        userId: widget.user.data!.id!,
-                        conversationId: friendList![index].conversationId!,
-                        conversationName: friendList![index].name!,
-                        conversationAvatar: friendList![index].avatar!,
-                        type: "friend",
-                        status: friendList![index].userStatus!,
-                      ),
-                    );
+                    // UIHelpers.nextScreen(
+                    //   context,
+                    //   ChatPage(
+                    //   ),
+                    // );
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
@@ -433,16 +438,16 @@ class _HomePageState extends State<HomePage> {
     );
     if (croppedImage != null) {
       imageCache.clear();
-      APIService.updateUserAvatar({'avatar': croppedImage.path, 'id': widget.user.data!.id!}).then((value) {
+      APIService.updateUserAvatar({'avatar': croppedImage.path, 'id': widget.user.id!}).then((value) {
         if (value != null) {
-          ChatUser user = value;
+          ChatUser user = ChatUser.fromJson(value);
           if (user.status == "success") {
             setState(() {
-              widget.user.data!.avatar = user.data!.avatar;
+              widget.user.avatar = user.avatar;
             });
             SharedPreference.saveUserData(jsonEncode(user));
           } else {
-            UIHelpers.showSnackBar(context, Colors.red, user.message);
+            UIHelpers.showSnackBar(context, Colors.red, value["message"]);
           }
         } else {
           UIHelpers.showSnackBar(context, Colors.red, "unidentified problem occurred");

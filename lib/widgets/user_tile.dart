@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user.dart';
+import 'package:flutter_chat_app/screen/chat_screen.dart';
 
 class UserTile extends StatelessWidget {
-  final ChatUserData chatUser;
+  final ChatUser chatUser;
   const UserTile({Key? key, required this.chatUser}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        // UIHelpers.nextScreen(
+          // context,
+          // ChatPage(
+          //   userId: chatUser.id!,
+          //   conversationId: '1',
+          //   conversationName: chatUser.name!,
+          //   conversationAvatar: chatUser.avatar!,
+          //   type: "friend",
+          //   status: chatUser.status!,
+          // ),
+        // );
+      },
       child: Container(
         width: MediaQuery.of(context).size.width,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),

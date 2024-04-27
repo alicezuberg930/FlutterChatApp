@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                       TextFormField(
                         onChanged: (value) => {setState(() => email = value)},
                         validator: (value) {
-                          if (emailValidator(value!) == false) {
+                          if (RegularExpression.emailValidator(value!) == false) {
                             return "Email format is incorrect";
                           } else {
                             return null;
@@ -138,14 +138,15 @@ class _LoginPageState extends State<LoginPage> {
       String? fcmID = await FirebaseMessaging.instance.getToken();
       String? ipAddress = await APIService.getPublicIP();
       APIService.login({'email': email!, 'password': password!, 'fcm_id': fcmID!, 'ip_address': ipAddress!}).then((value) {
-        if (value != null) {
-          ChatUser user = value;
-          if (user.status == "success") {
-            UIHelpers.showSnackBar(context, Colors.green, user.message);
+        if (value["data"] != null) {
+          ChatUser user = ChatUser.fromJson(value["data"]);
+          if (value["status"] == "success") {
+            UIHelpers.showSnackBar(context, Colors.green, value["message"]);
             SharedPreference.saveUserData(jsonEncode(user));
+            SharedPreference.saveUserToken(value['bearer_token']);
             UIHelpers.nextScreenReplace(context, HomePage(user: user));
           } else {
-            UIHelpers.showSnackBar(context, Colors.red, user.message);
+            UIHelpers.showSnackBar(context, Colors.red, value["message"]);
           }
         } else {
           UIHelpers.showSnackBar(context, Colors.red, "unidentified problem occurred");

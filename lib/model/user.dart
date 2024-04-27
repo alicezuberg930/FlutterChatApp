@@ -1,28 +1,4 @@
 class ChatUser {
-  String? status;
-  String? message;
-  ChatUserData? data;
-
-  ChatUser({this.status, this.message, required this.data});
-
-  factory ChatUser.fromJson(Map<String, dynamic> json) {
-    return ChatUser(
-      status: json['status'],
-      message: json['message'],
-      data: json['data'] != null ? ChatUserData.fromJson(json['data']) : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'status': status,
-      'message': message,
-      'data': data != null ? data!.toJson() : null,
-    };
-  }
-}
-
-class ChatUserData {
   String? id;
   String? name;
   String? email;
@@ -30,7 +6,7 @@ class ChatUserData {
   String? status;
   String? fcmID;
 
-  ChatUserData({
+  ChatUser({
     this.name,
     this.id,
     this.email,
@@ -39,8 +15,8 @@ class ChatUserData {
     this.fcmID,
   });
 
-  factory ChatUserData.fromJson(Map<String, dynamic> json) {
-    return ChatUserData(
+  factory ChatUser.fromJson(Map<String, dynamic> json) {
+    return ChatUser(
       name: json['name'],
       id: json['id'].toString(),
       email: json['email'],
