@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 
+import 'dart:async';
 import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/message.dart';
+import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
@@ -14,9 +16,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' as foundation;
 
 class ChatPage extends StatefulWidget {
-  final int conversationId;
+  UserConversation? userConversation;
+  ChatUser? chatUser;
 
-  const ChatPage({Key? key, required this.conversationId}) : super(key: key);
+  ChatPage({Key? key, this.userConversation, this.chatUser}) : super(key: key);
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -31,36 +34,63 @@ class _ChatPageState extends State<ChatPage> {
   bool showEmojiPicker = false;
   FocusNode focusNode = FocusNode();
   bool isDarkMode = SharedPreference.getDarkMode() ?? false;
-  UserConversation? userConversation;
   APIService apiService = APIService();
+  int currentPage = 1;
+  StreamSubscription? messagesListStream;
+  bool loadMoreMessage = true;
 
   @override
   void initState() {
-    getUserMessages();
+    getConversationMessages();
     focusNode.addListener(() {
       if (focusNode.hasFocus) setState(() => showEmojiPicker = false);
+    });
+    scrollController.addListener(() {
+      if (scrollController.position.maxScrollExtent == scrollController.offset) {
+        getConversationMessages(initialLoading: false);
+      }
     });
     super.initState();
   }
 
-  getUserMessages() async {
-    userConversation = await apiService.getUserConversationDetails(widget.conversationId);
-    // var messageData = await APIService.getUserMessages(widget.conversationId);
-    // if (messageData != null && context.mounted && messageData != null) {
-    //   setState(() {
-    //     messageList = messageData.reversed.toList();
-    //   });
-    // }
+  @override
+  void dispose() {
+    chatController.dispose();
+    scrollController.dispose();
+    focusNode.dispose();
+    super.dispose();
+  }
+
+  getConversationMessages({bool initialLoading = true}) async {
+    if (widget.userConversation == null) return;
+    if (!initialLoading) currentPage += 1;
+    List<Message>? tempMessageList = await apiService.getConversationMessages(widget.userConversation!.conversationId!, page: currentPage);
+    setState(() {
+      if (initialLoading) {
+        messageList = tempMessageList!;
+      } else {
+        tempMessageList != null ? messageList!.addAll(tempMessageList) : null;
+      }
+      loadMoreMessage = false;
+    });
   }
 
   sendMessage(String message) async {
-    await APIService.sendMessage({
+    if (widget.userConversation == null) {
+      UserConversation? userConversation = await apiService.startOneToOneConversation(widget.chatUser!.id!, recentMessage: message);
+      widget.userConversation = userConversation;
+    }
+    await apiService.sendMessage({
       'content': message,
-      'sender_id': userConversation!.userId!,
       'message_type': 'text',
-      'conversation_id': widget.conversationId.toString(),
+      'conversation_id': widget.userConversation!.conversationId,
     }).then((value) {
-      getUserMessages();
+      if (value != null) {
+        setState(() {
+          messageList!.insert(0, value);
+        });
+      }
+      // getConversationMessages();
       scrollController.jumpTo(scrollController.position.minScrollExtent);
     });
   }
@@ -74,16 +104,25 @@ class _ChatPageState extends State<ChatPage> {
     );
     if (selectedFile != null) {
       files.add(File(selectedFile.files.first.path!));
-      await APIService.sendMessage(
+      if (widget.userConversation == null) {
+        UserConversation? userConversation = await apiService.startOneToOneConversation(widget.chatUser!.id!);
+        widget.userConversation = userConversation;
+      }
+      await apiService.sendMessage(
         {
           'content': chatController.text,
-          'sender_id': userConversation!.userId!,
+          'sender_id': widget.userConversation!.userId!,
           'message_type': selectedFile.files.first.extension == "mp3" ? "audio" : "others",
-          'conversation_id': userConversation!.conversationId!.toString(),
+          'conversation_id': widget.userConversation!.conversationId!.toString(),
         },
         files: files,
       ).then((value) {
-        getUserMessages();
+        if (value != null) {
+          setState(() {
+            messageList!.insert(0, value);
+          });
+        }
+        // getConversationMessages();
         scrollController.jumpTo(scrollController.position.minScrollExtent);
       });
     }
@@ -91,19 +130,28 @@ class _ChatPageState extends State<ChatPage> {
 
   chooseMultipleImage() async {
     List<File>? photos;
-    final selectedImages = await picker.pickMultipleMedia(imageQuality: 75);
+    final selectedImages = await picker.pickMultipleMedia();
     if (selectedImages.isNotEmpty) {
       photos = selectedImages.map((e) => File(e.path)).toList();
-      await APIService.sendMessage(
+      if (widget.userConversation == null) {
+        UserConversation? userConversation = await apiService.startOneToOneConversation(widget.chatUser!.id!);
+        widget.userConversation = userConversation;
+      }
+      await apiService.sendMessage(
         {
           'content': chatController.text,
-          'sender_id': userConversation!.userId.toString(),
+          'sender_id': widget.userConversation!.userId,
           'message_type': 'image',
-          'conversation_id': userConversation!.conversationId.toString(),
+          'conversation_id': widget.userConversation!.conversationId,
         },
         files: photos,
       ).then((value) {
-        getUserMessages();
+        if (value != null) {
+          setState(() {
+            messageList!.insert(0, value);
+          });
+        }
+        // getConversationMessages();
         scrollController.jumpTo(scrollController.position.minScrollExtent);
       });
     }
@@ -111,19 +159,28 @@ class _ChatPageState extends State<ChatPage> {
 
   takeCameraPicture() async {
     List<File> photos = [];
-    picker.pickImage(imageQuality: 75, source: ImageSource.camera).then((value) {
+    picker.pickImage(source: ImageSource.camera).then((value) async {
       if (value != null) {
         photos.add(File(value.path));
-        APIService.sendMessage(
+        if (widget.userConversation == null) {
+          UserConversation? userConversation = await apiService.startOneToOneConversation(widget.chatUser!.id!);
+          widget.userConversation = userConversation;
+        }
+        apiService.sendMessage(
           {
             'content': chatController.text,
-            'sender_id': userConversation!.userId!,
+            'sender_id': widget.userConversation!.userId!,
             'message_type': 'image',
-            'conversation_id': userConversation!.conversationId.toString(),
+            'conversation_id': widget.userConversation!.conversationId.toString(),
           },
           files: photos,
         ).then((value) {
-          getUserMessages();
+          if (value != null) {
+            setState(() {
+              messageList!.insert(0, value);
+            });
+          }
+          // getConversationMessages();
           scrollController.jumpTo(scrollController.position.minScrollExtent);
         });
       }
@@ -138,16 +195,21 @@ class _ChatPageState extends State<ChatPage> {
             child: ListView.builder(
               reverse: true,
               controller: scrollController,
-              itemCount: messageList!.length,
+              itemCount: messageList!.length + 1,
               itemBuilder: (context, index) {
-                return MessageTile(
-                  content: messageList![index].content ?? "",
-                  sender: messageList![index].name!,
-                  sentbyme: userConversation!.userId == messageList![index].senderId,
-                  messageType: messageList![index].messageType!,
-                  files: messageList![index].photos ?? "",
-                  fileNames: messageList![index].fileNames ?? "",
-                );
+                if (index < messageList!.length) {
+                  return MessageTile(
+                    message: messageList![index],
+                    sentbyme: widget.userConversation!.userId == messageList![index].senderId,
+                  );
+                } else {
+                  return loadMoreMessage
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : const SizedBox.shrink();
+                }
               },
             ),
           );
@@ -155,15 +217,15 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.minScrollExtent,
-          duration: const Duration(milliseconds: 1),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (scrollController.hasClients) {
+    //     scrollController.animateTo(
+    //       scrollController.position.minScrollExtent,
+    //       duration: const Duration(milliseconds: 1),
+    //       curve: Curves.easeInOut,
+    //     );
+    //   }
+    // });
     return SafeArea(
       child: Scaffold(
         backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
@@ -175,7 +237,9 @@ class _ChatPageState extends State<ChatPage> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(100),
                 child: Image(
-                  image: NetworkImage(userConversation!.group!.avatar ?? userConversation!.receiver!.avatar!),
+                  image: NetworkImage(
+                    widget.chatUser?.avatar ?? (widget.userConversation!.group?.avatar ?? widget.userConversation!.receiver!.avatar!),
+                  ),
                   height: 40,
                   width: 40,
                   fit: BoxFit.cover,
@@ -187,7 +251,7 @@ class _ChatPageState extends State<ChatPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    userConversation!.group!.groupName ?? userConversation!.receiver!.name!,
+                    widget.chatUser?.name ?? (widget.userConversation!.group?.groupName ?? widget.userConversation!.receiver!.name!),
                     style: TextStyle(
                       fontSize: 18,
                       color: isDarkMode ? Colors.white : Colors.black,

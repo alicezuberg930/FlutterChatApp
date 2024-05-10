@@ -1,5 +1,7 @@
 // ignore_for_file: must_be_immutable
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
@@ -17,10 +19,7 @@ class ConversationTile extends StatelessWidget {
     return InkWell(
       onLongPress: () {},
       onTap: () {
-        UIHelpers.nextScreen(
-          context,
-          ChatPage(conversationId: userConversation!.conversationId!),
-        );
+        UIHelpers.nextScreen(context, ChatPage(userConversation: userConversation!));
       },
       child: Container(
         width: MediaQuery.of(context).size.width,

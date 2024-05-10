@@ -16,7 +16,7 @@ class UIHelpers {
             },
           ),
         )
-        .then((value) => action!(value));
+        .then((value) => action == null ? action!(value) : null);
   }
 
   static nextScreenReplace(context, page) {

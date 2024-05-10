@@ -5,7 +5,8 @@ import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
-import 'package:flutter_chat_app/service/notification_service.dart';
+import 'package:flutter_chat_app/service/awesome_notification_service.dart';
+import 'package:flutter_chat_app/service/firebase_notification_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 
 void main() async {
@@ -23,7 +24,11 @@ void main() async {
   } else {
     await Firebase.initializeApp();
   }
-  await NotificationService().initializeNotification();
+  await NotificationService.clearIrrelevantNotificationChannels();
+  await NotificationService.initializeAwesomeNotification();
+  await NotificationService.listenToActions();
+  await FirebaseNotificationService().setUpFirebaseMessaging();
+  // await NotificationService().initializeNotification();
   runApp(const MyChatApp());
 }
 

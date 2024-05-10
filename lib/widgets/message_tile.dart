@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
+import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:flutter_chat_app/widgets/seekbar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,22 +17,10 @@ import 'package:rxdart/rxdart.dart' as rxdart;
 import 'package:http/http.dart' as http;
 
 class MessageTile extends StatefulWidget {
-  final String content;
-  final String sender;
-  final bool sentbyme;
-  final String messageType;
-  dynamic files;
-  dynamic fileNames;
+  Message message;
+  bool sentbyme;
 
-  MessageTile({
-    Key? key,
-    required this.content,
-    required this.sender,
-    required this.sentbyme,
-    required this.messageType,
-    this.files,
-    this.fileNames,
-  }) : super(key: key);
+  MessageTile({Key? key, required this.message, required this.sentbyme}) : super(key: key);
 
   @override
   State<MessageTile> createState() => _MessageTileState();
@@ -44,14 +33,13 @@ class _MessageTileState extends State<MessageTile> {
   bool isPlayMusic = false;
   AudioPlayer? audioPlayer;
   Stream<SeekBarData>? seekBarDataStream;
-  String? size;
   bool isDarkMode = SharedPreference.getDarkMode() ?? false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.messageType == "video") {
-      videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.files[0]));
+    if (widget.message.messageType == "video") {
+      videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.message.medias![0].originalUrl!));
       initializedVideoPlayerFuture = videoPlayerController!.initialize();
       videoPlayerController!.addListener(() {
         if (videoPlayerController!.value.position == videoPlayerController!.value.duration) {
@@ -60,19 +48,17 @@ class _MessageTileState extends State<MessageTile> {
       });
       videoPlayerController!.setVolume(1.0);
     }
-    if (widget.messageType == "audio") {
+    if (widget.message.messageType == "audio") {
       setState(() {
         initializeAudio();
       });
     }
-    if (widget.messageType == "others") {
-      getFileSize(widget.files[0].toString());
-    }
+    if (widget.message.messageType == "others") {}
   }
 
   initializeAudio() async {
     audioPlayer = AudioPlayer();
-    await audioPlayer!.setUrl(widget.files[0]);
+    await audioPlayer!.setUrl(widget.message.medias![0].originalUrl!);
     audioPlayer!.playerStateStream.listen((event) {
       if (event.processingState == ProcessingState.completed) {
         setState(() {
@@ -99,10 +85,10 @@ class _MessageTileState extends State<MessageTile> {
   @override
   void dispose() {
     super.dispose();
-    if (widget.messageType == "video") {
+    if (widget.message.messageType == "video") {
       videoPlayerController!.dispose();
     }
-    if (widget.messageType == "audio") {
+    if (widget.message.messageType == "audio") {
       audioPlayer!.dispose();
     }
   }
@@ -128,28 +114,6 @@ class _MessageTileState extends State<MessageTile> {
       }
     } else if (status.isPermanentlyDenied) {
       openAppSettings();
-    }
-  }
-
-  getFileSize(String url) async {
-    http.Response r = await http.get(Uri.parse(url));
-    int fileSize = int.parse(r.headers["content-length"]!);
-    if (fileSize < 1024) {
-      setState(() {
-        size = '$fileSize B';
-      });
-      return;
-    }
-    if (fileSize > 1024) {
-      setState(() {
-        size = '$fileSize B';
-      });
-      size = '${(fileSize / 1024).toStringAsPrecision(3)} KB';
-    }
-    if (fileSize > 1048576) {
-      setState(() {
-        size = '${(fileSize / 1024 / 1024).toStringAsPrecision(3)} MB';
-      });
     }
   }
 
@@ -186,7 +150,7 @@ class _MessageTileState extends State<MessageTile> {
           crossAxisAlignment: widget.sentbyme ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Text(
-              widget.sender,
+              widget.message.sender!.name!,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
@@ -196,8 +160,8 @@ class _MessageTileState extends State<MessageTile> {
               ),
             ),
             const SizedBox(height: 8),
-            if (widget.messageType == "image")
-              for (int i = 0; i < widget.files.length; i++)
+            if (widget.message.messageType == "image")
+              for (int i = 0; i < widget.message.medias!.length; i++)
                 ClipRRect(
                   borderRadius: widget.sentbyme
                       ? const BorderRadius.only(
@@ -211,7 +175,7 @@ class _MessageTileState extends State<MessageTile> {
                           bottomRight: Radius.circular(20),
                         ),
                   child: CachedNetworkImage(
-                    imageUrl: widget.files[i],
+                    imageUrl: widget.message.medias![i].originalUrl!,
                     filterQuality: FilterQuality.high,
                     fit: BoxFit.cover,
                     progressIndicatorBuilder: (context, url, downloadProgress) => Center(
@@ -223,7 +187,7 @@ class _MessageTileState extends State<MessageTile> {
                     errorWidget: (context, url, error) => const Icon(Icons.error, color: Colors.red),
                   ),
                 ),
-            if (widget.messageType == "video")
+            if (widget.message.messageType == "video")
               ClipRRect(
                 borderRadius: widget.sentbyme
                     ? const BorderRadius.only(
@@ -275,7 +239,7 @@ class _MessageTileState extends State<MessageTile> {
                   ],
                 ),
               ),
-            if (widget.messageType == "text")
+            if (widget.message.messageType == "text")
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -293,7 +257,7 @@ class _MessageTileState extends State<MessageTile> {
                   color: widget.sentbyme ? Colors.blue : Colors.grey[400],
                 ),
                 child: Text(
-                  widget.content,
+                  widget.message.content!,
                   textAlign: TextAlign.start,
                   style: TextStyle(
                     fontSize: 16,
@@ -301,7 +265,7 @@ class _MessageTileState extends State<MessageTile> {
                   ),
                 ),
               ),
-            if (widget.messageType == "audio")
+            if (widget.message.messageType == "audio")
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -320,7 +284,12 @@ class _MessageTileState extends State<MessageTile> {
                 ),
                 child: InkWell(
                   onLongPress: () async {
-                    showMessageModal(download: await downloadFile(widget.files[0].toString(), widget.fileNames[0].toString()));
+                    showMessageModal(
+                      download: await downloadFile(
+                        widget.message.medias![0].originalUrl!,
+                        widget.message.medias![0].fileName!,
+                      ),
+                    );
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -360,7 +329,7 @@ class _MessageTileState extends State<MessageTile> {
                   ),
                 ),
               ),
-            if (widget.messageType == "others")
+            if (widget.message.messageType == "others")
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -379,7 +348,12 @@ class _MessageTileState extends State<MessageTile> {
                 ),
                 child: InkWell(
                   onLongPress: () async {
-                    showMessageModal(download: await downloadFile(widget.files[0].toString(), widget.fileNames[0].toString()));
+                    showMessageModal(
+                      download: await downloadFile(
+                        widget.message.medias![0].originalUrl!,
+                        widget.message.medias![0].fileName!,
+                      ),
+                    );
                   },
                   onTap: () {
                     // showDialog(
@@ -424,7 +398,7 @@ class _MessageTileState extends State<MessageTile> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.fileNames[0].toString(),
+                              widget.message.medias![0].fileName!,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -433,7 +407,7 @@ class _MessageTileState extends State<MessageTile> {
                               ),
                             ),
                             Text(
-                              size ?? "0 B",
+                              widget.message.medias![0].humanReadableSize!,
                               style: TextStyle(
                                 fontSize: 10,
                                 color: widget.sentbyme ? Colors.white : (isDarkMode ? Colors.white : Colors.black),

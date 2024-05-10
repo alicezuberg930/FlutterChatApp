@@ -1,5 +1,5 @@
 class ChatUser {
-  String? id;
+  int? id;
   String? name;
   String? email;
   String? avatar;
@@ -17,8 +17,8 @@ class ChatUser {
 
   factory ChatUser.fromJson(Map<String, dynamic> json) {
     return ChatUser(
+      id: json['id'],
       name: json['name'],
-      id: json['id'].toString(),
       email: json['email'],
       avatar: json['avatar'],
       status: json['status'].toString(),
@@ -29,11 +29,11 @@ class ChatUser {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'id': id.toString(),
+      'id': id,
       'email': email,
       'avatar': avatar,
-      'status': status.toString(),
-      'fcm_id': fcmID ?? "",
+      'status': status,
+      'fcm_id': fcmID,
     };
   }
 }

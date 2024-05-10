@@ -1,12 +1,15 @@
+import 'package:flutter_chat_app/model/media.dart';
+import 'package:flutter_chat_app/model/user.dart';
+
 class Message {
   String? id;
   String? content;
-  String? senderId;
-  String? conversationId;
+  int? senderId;
+  int? conversationId;
   String? messageType;
-  dynamic photos;
   String? name;
-  dynamic fileNames;
+  ChatUser? sender;
+  List<Media>? medias;
 
   Message({
     this.id,
@@ -14,34 +17,34 @@ class Message {
     this.senderId,
     this.conversationId,
     this.messageType,
-    this.photos,
     this.name,
-    this.fileNames,
+    this.sender,
+    this.medias,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
       id: json['id'].toString(),
       content: json['content'],
-      senderId: json['sender_id'].toString(),
-      conversationId: json['conversation_id'].toString(),
+      senderId: json['sender_id'],
+      conversationId: json['conversation_id'],
       messageType: json['message_type'],
-      photos: json['photos'],
       name: json['name'],
-      fileNames: json['file_names'],
+      sender: json['sender'] != null ? ChatUser.fromJson(json['sender']) : null,
+      medias: json['medias'].isNotEmpty ? List<Media>.from(json['medias'].map((x) => Media.fromJson(x))) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id.toString(),
+      'id': id,
       'content': content,
-      'sender_id': senderId.toString(),
-      'conversation_id': conversationId.toString(),
+      'sender_id': senderId,
+      'conversation_id': conversationId,
       'message_type': messageType,
-      'photos': photos,
       'name': name,
-      'file_names': fileNames,
+      'sender': sender?.toJson(),
+      'medias': medias?.map((e) => e.toJson()),
     };
   }
 }

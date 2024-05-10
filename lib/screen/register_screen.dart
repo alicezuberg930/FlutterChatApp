@@ -20,9 +20,9 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  String email = "";
-  String password = "";
-  String fullname = "";
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController fullnameController = TextEditingController();
   final formkey = GlobalKey<FormState>();
 
   @override
@@ -62,7 +62,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 25),
                       TextFormField(
-                        onChanged: (value) => {setState(() => fullname = value)},
+                        controller: fullnameController,
                         validator: (value) {
                           if (value!.isNotEmpty) {
                             return null;
@@ -76,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 15),
                       TextFormField(
-                        onChanged: (value) => {setState(() => email = value)},
+                        controller: emailController,
                         validator: (value) {
                           if (RegularExpression.emailValidator(value!) == false) {
                             return "Email is invalid";
@@ -98,7 +98,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             return null;
                           }
                         },
-                        onChanged: (value) => {setState(() => password = value)},
+                        controller: passwordController,
                         decoration: textInutDecoration.copyWith(
                           labelText: "Password",
                         ),
@@ -149,9 +149,12 @@ class _RegisterPageState extends State<RegisterPage> {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
       String? ipAddress = await APIService.getPublicIP();
-      await APIService.register(
-        {"fullname": fullname, "email": email, "password": password, "ip_address": ipAddress!},
-      ).then((value) async {
+      await APIService.register({
+        "fullname": fullnameController.text,
+        "email": emailController.text,
+        "password": passwordController.text,
+        "ip_address": ipAddress!,
+      }).then((value) async {
         if (value != null) {
           ChatUser user = value;
           if (user.status == "success") {

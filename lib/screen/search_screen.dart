@@ -16,6 +16,7 @@ class _SearchPageState extends State<SearchPage> {
   String? searchString;
   bool? isloading;
   List<ChatUser>? userList;
+  APIService apiService = APIService();
 
   @override
   void initState() {
@@ -23,16 +24,15 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   searchUser() async {
-    if (mounted) setState(() => isloading = true);
-    var strangerData = await APIService.searchUser(searchString ?? "");
-    if (strangerData != null) {
+    if (searchString!.trim().isEmpty) return;
+    setState(() => isloading = true);
+    List<ChatUser>? chatUserList = await apiService.searchUser(searchString ?? "");
+    if (chatUserList != null) {
       if (mounted) {
-        setState(() {
-          userList = strangerData.data;
-          isloading = false;
-        });
+        setState(() => userList = chatUserList);
       }
     }
+    setState(() => isloading = false);
   }
 
   @override
@@ -46,7 +46,9 @@ class _SearchPageState extends State<SearchPage> {
             style: const TextStyle(color: Colors.black45),
             onChanged: (value) {
               searchString = value;
-              searchUser();
+              if (value.isNotEmpty) {
+                searchUser();
+              }
             },
             decoration: const InputDecoration(
               hintStyle: TextStyle(color: Colors.black45),

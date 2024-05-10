@@ -11,17 +11,7 @@ class UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // UIHelpers.nextScreen(
-          // context,
-          // ChatPage(
-          //   userId: chatUser.id!,
-          //   conversationId: '1',
-          //   conversationName: chatUser.name!,
-          //   conversationAvatar: chatUser.avatar!,
-          //   type: "friend",
-          //   status: chatUser.status!,
-          // ),
-        // );
+        UIHelpers.nextScreen(context, ChatPage(chatUser: chatUser));
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -35,10 +25,6 @@ class UserTile extends StatelessWidget {
             chatUser.name!,
             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black45),
           ),
-          // subtitle: Text(
-          //   recentMessage,
-          //   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
-          // ),
         ),
       ),
     );

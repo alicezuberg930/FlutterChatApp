@@ -47,9 +47,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   getUserConversations() async {
-    var conversationData = await apiService!.getUserConversation();
-    print("aaaa" + conversationData.toString());
+    List<UserConversation>? conversationData = await apiService!.getUserConversation();
     if (conversationData != null) {
+      print(conversationData![0].toJson());
       setState(() {
         userConversationList = conversationData;
       });

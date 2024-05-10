@@ -1,7 +1,7 @@
 import 'package:flutter_chat_app/model/user.dart';
 
 class Group {
-  String? id;
+  int? id;
   String? groupName;
   int? isActive;
   int? adminID;
@@ -12,7 +12,7 @@ class Group {
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
-      id: json["user_id"],
+      id: json["id"],
       groupName: json["group_name"],
       isActive: json['is_active'],
       avatar: json['avatar'],
@@ -28,7 +28,7 @@ class Group {
       "is_active": isActive,
       "avatar": avatar,
       "admin_id": adminID,
-      "users": users.toString(),
+      "users": users?.map((e) => e.toJson()),
     };
   }
 }

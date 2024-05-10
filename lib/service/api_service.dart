@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_chat_app/common/api_url.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/model/message.dart';
@@ -23,15 +24,18 @@ class APIService extends HttpService {
     }
   }
 
-  static Future login(Map<String, String>? params) async {
-    Map<String, dynamic>? responseBody;
+  Future login(Map<String, String>? params) async {
+    Response? response;
     try {
-      final response = await http.post(Uri.parse(ApiURL.login), body: params);
-      responseBody = json.decode(response.body);
-      print(responseBody);  
-      return responseBody;
+      response = await post(ApiURL.login, params);
+      // if (response.statusCode == 200) {
+      return response;
+      // } else {
+      //   return null;
+      // }
     } catch (e) {
-      return responseBody;
+      return response;
+      // return null;
     }
   }
 
@@ -49,7 +53,7 @@ class APIService extends HttpService {
     }
   }
 
-  static Future updateUserAvatar(Map<String, String>? params) async {
+  static Future updateUserAvatar(Map<String, dynamic>? params) async {
     try {
       var request = http.MultipartRequest('POST', Uri.parse(ApiURL.updateUserAvatar));
       request.headers.addAll(ApiURL.headers);
@@ -86,7 +90,6 @@ class APIService extends HttpService {
     try {
       final response = await get(ApiURL.getUserConversations);
       final responseBody = response.data;
-      print(responseBody);
       if (response.statusCode == 200) {
         return List<UserConversation>.from(responseBody["data"].map((x) => UserConversation.fromJson(x)));
       } else {
@@ -97,7 +100,7 @@ class APIService extends HttpService {
     }
   }
 
-  static Future getUserFriends(String userId) async {
+  static Future getUserFriends(int userId) async {
     try {
       final response = await http.get(Uri.parse("${ApiURL.getUserFriends}?user_id=$userId"));
       Map<String, dynamic> responseBody = json.decode(response.body);
@@ -111,12 +114,13 @@ class APIService extends HttpService {
     }
   }
 
-  static Future<Message?> getUserMessages(String conversationId) async {
+  Future<List<Message>?> getConversationMessages(int conversationId, {int page = 1}) async {
     try {
-      final response = await http.get(Uri.parse("${ApiURL.getUserMessages}?conversation_id=$conversationId"));
-      Map<String, dynamic> responseBody = json.decode(response.body);
+      final response = await get(ApiURL.message, queryParameters: {"conversation_id": conversationId, "page": page});
+      dynamic responseBody = response.data;
+      print(responseBody);
       if (response.statusCode == 200) {
-        return Message.fromJson(responseBody);
+        return List<Message>.from(responseBody["data"].map((x) => Message.fromJson(x)));
       } else {
         return null;
       }
@@ -125,12 +129,12 @@ class APIService extends HttpService {
     }
   }
 
-  static Future searchUser(String fullname) async {
+  Future<List<ChatUser>?> searchUser(String fullname) async {
     try {
-      final response = await http.get(Uri.parse("${ApiURL.searchUser}?fullname=$fullname"));
-      Map<String, dynamic> responseBody = json.decode(response.body);
+      final response = await get(ApiURL.user, queryParameters: {'fullname': fullname});
+      dynamic responseBody = response.data;
       if (response.statusCode == 200) {
-        return ChatUser.fromJson(responseBody);
+        return List<ChatUser>.from(responseBody["data"].map((x) => ChatUser.fromJson(x)));
       } else {
         return null;
       }
@@ -139,35 +143,35 @@ class APIService extends HttpService {
     }
   }
 
-  static Future sendMessage(Map<String, String> params, {List<File>? files}) async {
-    try {
-      dynamic response;
-      Map<String, dynamic> responseBody;
-      if (files != null) {
-        var request = http.MultipartRequest('POST', Uri.parse(ApiURL.sendMessage));
-        request.headers.addAll(ApiURL.headers);
-        for (File file in files) {
-          request.files.add(await http.MultipartFile.fromPath('files[]', file.path));
-        }
-        request.fields['content'] = params['content']!;
-        request.fields['sender_id'] = params['sender_id']!;
-        request.fields['message_type'] = params['message_type']!;
-        request.fields['conversation_id'] = params['conversation_id']!;
-        response = await request.send();
-        var responseData = await response.stream.toBytes();
-        responseBody = jsonDecode(String.fromCharCodes(responseData));
-      } else {
-        response = await http.post(Uri.parse(ApiURL.sendMessage), body: params);
-        responseBody = json.decode(response.body);
+  Future<Message?> sendMessage(Map<String, dynamic> params, {List<File>? files}) async {
+    FormData formData = FormData.fromMap(params);
+    if (files != null && files.isNotEmpty) {
+      for (File? file in files) {
+        // final fileSize = file!.lengthSync() / 1024;
+        // if (fileSize > AppFileLimit.prescriptionFileSizeLimit) {
+        // file = await Utils.compressFile(file: file, quality: 60);
+        // }
+        formData.files.add(
+          MapEntry("medias[]", await MultipartFile.fromFile(file!.path)),
+        );
       }
-      if (response.statusCode == 200) {
-        return Message.fromJson(responseBody);
-      } else {
-        return null;
-      }
-    } catch (e) {
+    }
+    final response = await postWithFiles(ApiURL.message, formData);
+    if (response.statusCode == 200) {
+      return Message.fromJson(response.data["data"]);
+    } else {
       return null;
     }
+    // final apiResponse = ApiResponse.fromResponse(apiResult);
+    // if (apiResponse.allGood) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+    // } catch (e) {
+    //   print(e.toString());
+    //   return null;
+    // }
   }
 
   static Future createGroup(Map<String, dynamic> params) async {
@@ -189,7 +193,23 @@ class APIService extends HttpService {
     try {
       final response = await get("${ApiURL.conversation}/$conversationId");
       dynamic responseBody = response.data;
-      print(responseBody);
+      if (response.statusCode == 200) {
+        return UserConversation.fromJson(responseBody["data"]);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<UserConversation?> startOneToOneConversation(int receiverId, {String? recentMessage}) async {
+    try {
+      final response = await post(
+        ApiURL.conversation,
+        {'recent_message': recentMessage, 'receiver_id': receiverId},
+      );
+      dynamic responseBody = response.data;
       if (response.statusCode == 200) {
         return UserConversation.fromJson(responseBody["data"]);
       } else {
