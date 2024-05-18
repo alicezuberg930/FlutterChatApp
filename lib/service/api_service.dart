@@ -118,7 +118,7 @@ class APIService extends HttpService {
     try {
       final response = await get(ApiURL.message, queryParameters: {"conversation_id": conversationId, "page": page});
       dynamic responseBody = response.data;
-      print(responseBody);
+      // print(responseBody);
       if (response.statusCode == 200) {
         return List<Message>.from(responseBody["data"].map((x) => Message.fromJson(x)));
       } else {

@@ -2,7 +2,7 @@ import 'package:flutter_chat_app/model/media.dart';
 import 'package:flutter_chat_app/model/user.dart';
 
 class Message {
-  String? id;
+  int? id;
   String? content;
   int? senderId;
   int? conversationId;
@@ -24,7 +24,7 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      id: json['id'].toString(),
+      id: json['id'],
       content: json['content'],
       senderId: json['sender_id'],
       conversationId: json['conversation_id'],

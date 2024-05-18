@@ -14,7 +14,6 @@ class HttpService {
     return {
       HttpHeaders.acceptHeader: "application/json",
       HttpHeaders.authorizationHeader: "Bearer $userToken",
-      // "lang": "vi",
     };
   }
 
@@ -24,7 +23,7 @@ class HttpService {
       validateStatus: (status) {
         return status != null && status <= 500;
       },
-      // connectTimeout: 300,
+      connectTimeout: 300,
     );
     dio = Dio(baseOptions);
     dio!.interceptors.add(getCacheManager().interceptor);
@@ -179,7 +178,6 @@ class HttpService {
     print("type ==> ${ex.type}");
     response.statusCode = 400;
     String? msg = response.statusMessage;
-
     try {
       if (ex.type == DioErrorType.connectTimeout) {
         msg = "Connection timeout. Please check your internet connection and try again";
@@ -198,18 +196,6 @@ class HttpService {
       msg = "Please check your internet connection and try again";
       response.data = {"message": msg};
     }
-
     throw msg;
-  }
-
-  //NEUTRALS
-  Future<Response> getExternal(
-    String url, {
-    Map<String, dynamic>? queryParameters,
-  }) async {
-    return dio!.get(
-      url,
-      queryParameters: queryParameters,
-    );
   }
 }

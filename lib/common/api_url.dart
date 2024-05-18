@@ -1,7 +1,7 @@
 import 'dart:io';
 
 class ApiURL {
-  static const apiUrl = "https://a7ed-125-235-239-15.ngrok-free.app/api";
+  static const apiUrl = "https://4135-125-235-239-15.ngrok-free.app/api";
   static const headers = {HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8'};
   static const login = "$apiUrl/login";
   static const register = "$apiUrl/register";

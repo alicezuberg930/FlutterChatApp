@@ -36,12 +36,19 @@ class _ChatPageState extends State<ChatPage> {
   bool isDarkMode = SharedPreference.getDarkMode() ?? false;
   APIService apiService = APIService();
   int currentPage = 1;
-  StreamSubscription? messagesListStream;
+  Stream? messagesListStream;
   bool loadMoreMessage = true;
+  Stream? stream;
+  late StreamSubscription streamSubscription;
 
   @override
   void initState() {
     getConversationMessages();
+    stream = Stream.periodic(const Duration(seconds: 3), (int i) {
+      fetchConversationMessagesPeriodically();
+    });
+    streamSubscription = stream!.listen((event) {});
+
     focusNode.addListener(() {
       if (focusNode.hasFocus) setState(() => showEmojiPicker = false);
     });
@@ -58,10 +65,11 @@ class _ChatPageState extends State<ChatPage> {
     chatController.dispose();
     scrollController.dispose();
     focusNode.dispose();
+    streamSubscription.cancel();
     super.dispose();
   }
 
-  getConversationMessages({bool initialLoading = true}) async {
+  void getConversationMessages({bool initialLoading = true}) async {
     if (widget.userConversation == null) return;
     if (!initialLoading) currentPage += 1;
     List<Message>? tempMessageList = await apiService.getConversationMessages(widget.userConversation!.conversationId!, page: currentPage);
@@ -72,6 +80,22 @@ class _ChatPageState extends State<ChatPage> {
         tempMessageList != null ? messageList!.addAll(tempMessageList) : null;
       }
       loadMoreMessage = false;
+    });
+  }
+
+  fetchConversationMessagesPeriodically() async {
+    if (widget.userConversation == null) return;
+    List<Message>? tempMessageList = await apiService.getConversationMessages(widget.userConversation!.conversationId!, page: 1);
+    setState(() {
+      List<int>? originalList = messageList!.map((message) => message.id!).toList();
+      List<int>? newList = tempMessageList!.map((message) => message.id!).toList();
+      if (originalList.isEmpty || newList.isEmpty) return;
+      for (int id in newList) {
+        if (!originalList.contains(id)) {
+          Message m = tempMessageList.firstWhere((e) => e.id == id);
+          messageList!.insert(0, m);
+        }
+      }
     });
   }
 
