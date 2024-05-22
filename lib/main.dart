@@ -7,6 +7,7 @@ import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/service/awesome_notification_service.dart';
 import 'package:flutter_chat_app/service/firebase_notification_service.dart';
+import 'package:flutter_chat_app/service/route_generator_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 
 void main() async {
@@ -18,7 +19,7 @@ void main() async {
         apiKey: Constants.apiKey,
         projectId: Constants.projectId,
         messagingSenderId: Constants.messagingSenderId,
-        appId: Constants.appId,
+        appId: Constants.firebaseAppId,
       ),
     );
   } else {
@@ -40,17 +41,6 @@ class MyChatApp extends StatefulWidget {
 }
 
 class _MyChatAppState extends State<MyChatApp> {
-  bool isSignedIn = false;
-  ChatUser? userData;
-  final navigatorKey = GlobalKey<NavigatorState>();
-
-  @override
-  void initState() {
-    userData = SharedPreference.getUserData();
-    if (userData != null) isSignedIn = true;
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -60,8 +50,9 @@ class _MyChatAppState extends State<MyChatApp> {
         primaryColor: Constants.primaryColor,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: isSignedIn ? HomePage(user: userData!) : const LoginPage(),
-      navigatorKey: navigatorKey,
+      onGenerateRoute: RouteGeneratorService.generateRoute,
+      initialRoute: RouteGeneratorService.splashScreen,
+      navigatorKey: Constants().navigatorKey,
     );
   }
 }

@@ -1,12 +1,12 @@
 // ignore_for_file: must_be_immutable
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
+import 'package:flutter_chat_app/service/route_generator_service.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 
 class ConversationTile extends StatelessWidget {
   UserConversation? userConversation;
@@ -19,7 +19,7 @@ class ConversationTile extends StatelessWidget {
     return InkWell(
       onLongPress: () {},
       onTap: () {
-        UIHelpers.nextScreen(context, ChatPage(userConversation: userConversation!));
+        Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.chatScreen, arguments: userConversation);
       },
       child: Container(
         width: MediaQuery.of(context).size.width,

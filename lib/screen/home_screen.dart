@@ -6,7 +6,6 @@ import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
-import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/screen/my_profile_screen.dart';
 import 'package:flutter_chat_app/screen/search_screen.dart';
@@ -21,6 +20,7 @@ import 'package:image_picker/image_picker.dart';
 class HomePage extends StatefulWidget {
   final ChatUser user;
   const HomePage({Key? key, required this.user}) : super(key: key);
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage> {
   getUserConversations() async {
     List<UserConversation>? conversationData = await apiService!.getUserConversation();
     if (conversationData != null) {
-      print(conversationData![0].toJson());
       setState(() {
         userConversationList = conversationData;
       });

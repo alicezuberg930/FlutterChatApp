@@ -1,5 +1,4 @@
 import 'package:flutter_chat_app/model/group.dart';
-import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/model/user.dart';
 
 class UserConversation {

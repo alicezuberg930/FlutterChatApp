@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_chat_app/common/api_url.dart';
+import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/model/user.dart';
@@ -88,7 +89,7 @@ class APIService extends HttpService {
 
   Future<List<UserConversation>?> getUserConversation() async {
     try {
-      final response = await get(ApiURL.getUserConversations);
+      final response = await get(ApiURL.conversation);
       final responseBody = response.data;
       if (response.statusCode == 200) {
         return List<UserConversation>.from(responseBody["data"].map((x) => UserConversation.fromJson(x)));
@@ -118,7 +119,6 @@ class APIService extends HttpService {
     try {
       final response = await get(ApiURL.message, queryParameters: {"conversation_id": conversationId, "page": page});
       dynamic responseBody = response.data;
-      // print(responseBody);
       if (response.statusCode == 200) {
         return List<Message>.from(responseBody["data"].map((x) => Message.fromJson(x)));
       } else {
@@ -218,5 +218,34 @@ class APIService extends HttpService {
     } catch (e) {
       return null;
     }
+  }
+
+  Future<UserConversation?> checkForConversationWithUser(int receiverId) async {
+    try {
+      final response = await get(ApiURL.checkForConversationWithUser, queryParameters: {'receiver_id': receiverId});
+      dynamic responseBody = response.data;
+      if (response.statusCode == 200) {
+        return UserConversation.fromJson(responseBody["data"]);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<UserCallChannel?> getMeeting(int? receiverId, int? groupId) async {
+    // try {
+    final response = await get(ApiURL.getMeeting, queryParameters: {'receiver_id': receiverId, 'group_id': groupId});
+    dynamic responseBody = response.data;
+    print(responseBody);
+    if (response.statusCode == 200) {
+      return UserCallChannel.fromJson(responseBody["data"]);
+    } else {
+      return null;
+    }
+    // } catch (e) {
+    //   return null;
+    // }
   }
 }

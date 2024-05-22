@@ -7,9 +7,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
+import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/model/user.dart';
+import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
+import 'package:flutter_chat_app/screen/video_call_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,30 +28,34 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   ScrollController scrollController = ScrollController();
   TextEditingController chatController = TextEditingController();
   ImagePicker picker = ImagePicker();
-  List<Message>? messageList;
+  List<Message> messageList = [];
   bool isControllerEmpty = true;
   bool showEmojiPicker = false;
   FocusNode focusNode = FocusNode();
   bool isDarkMode = SharedPreference.getDarkMode() ?? false;
   APIService apiService = APIService();
   int currentPage = 1;
-  Stream? messagesListStream;
-  bool loadMoreMessage = true;
   Stream? stream;
+  bool loadMoreMessage = true;
   late StreamSubscription streamSubscription;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.hidden || state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+    } else if (state == AppLifecycleState.resumed) {}
+  }
 
   @override
   void initState() {
     getConversationMessages();
-    stream = Stream.periodic(const Duration(seconds: 3), (int i) {
+    stream = Stream.periodic(const Duration(seconds: 5), (int i) {
       fetchConversationMessagesPeriodically();
     });
     streamSubscription = stream!.listen((event) {});
-
     focusNode.addListener(() {
       if (focusNode.hasFocus) setState(() => showEmojiPicker = false);
     });
@@ -57,6 +64,7 @@ class _ChatPageState extends State<ChatPage> {
         getConversationMessages(initialLoading: false);
       }
     });
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
 
@@ -66,37 +74,45 @@ class _ChatPageState extends State<ChatPage> {
     scrollController.dispose();
     focusNode.dispose();
     streamSubscription.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  void getConversationMessages({bool initialLoading = true}) async {
-    if (widget.userConversation == null) return;
+  getConversationMessages({bool initialLoading = true}) async {
+    if (widget.userConversation == null) {
+      UserConversation? userConversation = await apiService.checkForConversationWithUser(widget.chatUser!.id!);
+      if (userConversation != null) {
+        widget.userConversation = userConversation;
+      } else {
+        return;
+      }
+    }
     if (!initialLoading) currentPage += 1;
     List<Message>? tempMessageList = await apiService.getConversationMessages(widget.userConversation!.conversationId!, page: currentPage);
     setState(() {
       if (initialLoading) {
-        messageList = tempMessageList!;
+        messageList = tempMessageList ?? [];
       } else {
-        tempMessageList != null ? messageList!.addAll(tempMessageList) : null;
+        tempMessageList != null ? messageList.addAll(tempMessageList) : null;
       }
       loadMoreMessage = false;
     });
   }
 
   fetchConversationMessagesPeriodically() async {
-    if (widget.userConversation == null) return;
-    List<Message>? tempMessageList = await apiService.getConversationMessages(widget.userConversation!.conversationId!, page: 1);
-    setState(() {
-      List<int>? originalList = messageList!.map((message) => message.id!).toList();
-      List<int>? newList = tempMessageList!.map((message) => message.id!).toList();
-      if (originalList.isEmpty || newList.isEmpty) return;
-      for (int id in newList) {
-        if (!originalList.contains(id)) {
-          Message m = tempMessageList.firstWhere((e) => e.id == id);
-          messageList!.insert(0, m);
-        }
-      }
-    });
+    // if (widget.userConversation == null) return;
+    // List<Message>? tempMessageList = await apiService.getConversationMessages(widget.userConversation!.conversationId!, page: 1);
+    // setState(() {
+    //   if (tempMessageList == null || messageList.isEmpty) return;
+    //   List<int>? originalList = messageList.map((message) => message.id!).toList();
+    //   List<int>? newList = tempMessageList.map((message) => message.id!).toList();
+    //   for (int id in newList) {
+    //     if (!originalList.contains(id)) {
+    //       Message m = tempMessageList.firstWhere((e) => e.id == id);
+    //       messageList.insert(0, m);
+    //     }
+    //   }
+    // });
   }
 
   sendMessage(String message) async {
@@ -111,15 +127,15 @@ class _ChatPageState extends State<ChatPage> {
     }).then((value) {
       if (value != null) {
         setState(() {
-          messageList!.insert(0, value);
+          messageList.insert(0, value);
         });
       }
-      // getConversationMessages();
+      if (!scrollController.hasClients) return;
       scrollController.jumpTo(scrollController.position.minScrollExtent);
     });
   }
 
-  chooseFile() async {
+  sendFile() async {
     List<File> files = [];
     FilePickerResult? selectedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
@@ -143,16 +159,16 @@ class _ChatPageState extends State<ChatPage> {
       ).then((value) {
         if (value != null) {
           setState(() {
-            messageList!.insert(0, value);
+            messageList.insert(0, value);
           });
         }
-        // getConversationMessages();
+        if (!scrollController.hasClients) return;
         scrollController.jumpTo(scrollController.position.minScrollExtent);
       });
     }
   }
 
-  chooseMultipleImage() async {
+  sendMultipleImage() async {
     List<File>? photos;
     final selectedImages = await picker.pickMultipleMedia();
     if (selectedImages.isNotEmpty) {
@@ -172,16 +188,16 @@ class _ChatPageState extends State<ChatPage> {
       ).then((value) {
         if (value != null) {
           setState(() {
-            messageList!.insert(0, value);
+            messageList.insert(0, value);
           });
         }
-        // getConversationMessages();
+        if (!scrollController.hasClients) return;
         scrollController.jumpTo(scrollController.position.minScrollExtent);
       });
     }
   }
 
-  takeCameraPicture() async {
+  sendCameraPicture() async {
     List<File> photos = [];
     picker.pickImage(source: ImageSource.camera).then((value) async {
       if (value != null) {
@@ -201,30 +217,58 @@ class _ChatPageState extends State<ChatPage> {
         ).then((value) {
           if (value != null) {
             setState(() {
-              messageList!.insert(0, value);
+              messageList.insert(0, value);
             });
           }
-          // getConversationMessages();
-          scrollController.jumpTo(scrollController.position.minScrollExtent);
+          if (scrollController.hasClients) scrollController.jumpTo(scrollController.position.minScrollExtent);
         });
       }
     });
   }
 
   chatMessagesListWidget() {
-    return messageList == null
-        ? const SizedBox.shrink()
+    return messageList.isEmpty
+        ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: Image(
+                  image: NetworkImage(
+                    widget.chatUser?.avatar ?? (widget.userConversation!.group?.avatar ?? widget.userConversation!.receiver!.avatar!),
+                  ),
+                  height: 80,
+                  width: 80,
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                widget.chatUser?.name ?? (widget.userConversation!.group?.groupName ?? widget.userConversation!.receiver!.name!),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "You are still not friend with this user",
+                style: TextStyle(color: Colors.grey),
+              )
+            ],
+          )
         : ScrollConfiguration(
             behavior: RemoveGlowingBehavior(),
             child: ListView.builder(
               reverse: true,
               controller: scrollController,
-              itemCount: messageList!.length + 1,
+              itemCount: messageList.length + 1,
               itemBuilder: (context, index) {
-                if (index < messageList!.length) {
+                if (index < messageList.length) {
                   return MessageTile(
-                    message: messageList![index],
-                    sentbyme: widget.userConversation!.userId == messageList![index].senderId,
+                    message: messageList[index],
+                    sentbyme: widget.userConversation!.userId == messageList[index].senderId,
                   );
                 } else {
                   return loadMoreMessage
@@ -303,7 +347,14 @@ class _ChatPageState extends State<ChatPage> {
               icon: const Icon(Icons.phone),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () async {
+                // UserCallChannel? userCallChannel = await apiService.getMeeting(
+                //   widget.userConversation!.receiver?.id,
+                //   widget.userConversation!.group?.id,
+                // );
+                // print(userCallChannel!.toJson());
+                if (context.mounted) UIHelpers.nextScreen(context, VideoCallScreen());
+              },
               icon: const Icon(Icons.video_call),
             ),
             IconButton(
@@ -335,7 +386,7 @@ class _ChatPageState extends State<ChatPage> {
                     child: Row(
                       children: [
                         InkWell(
-                          onTap: () => chooseFile(),
+                          onTap: () => sendFile(),
                           child: SizedBox(
                             height: 40,
                             width: 40,
@@ -343,7 +394,7 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                         ),
                         InkWell(
-                          onTap: () => chooseMultipleImage(),
+                          onTap: () => sendMultipleImage(),
                           child: SizedBox(
                             height: 40,
                             width: 40,
@@ -352,7 +403,7 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                         InkWell(
                           onTap: () async {
-                            if (context.mounted) takeCameraPicture();
+                            if (context.mounted) sendCameraPicture();
                           },
                           child: SizedBox(
                             height: 40,
