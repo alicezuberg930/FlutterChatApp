@@ -4,6 +4,7 @@ import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// ignore: must_be_immutable
 class VideoCallScreen extends StatefulWidget {
   UserCallChannel? userCallChannel;
 

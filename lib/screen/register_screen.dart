@@ -6,10 +6,10 @@ import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
-import 'package:flutter_chat_app/screen/home_screen.dart';
-import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/common/form_input.dart';
+import 'package:flutter_chat_app/service/route_generator_service.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:flutter_chat_app/shared/regular_expression.dart';
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 
@@ -129,7 +129,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             TextSpan(
                               style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline),
                               text: ' Login here',
-                              recognizer: TapGestureRecognizer()..onTap = () => UIHelpers.nextScreen(context, const LoginPage()),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.loginScreen);
+                                },
                             ),
                           ],
                         ),
@@ -161,7 +164,11 @@ class _RegisterPageState extends State<RegisterPage> {
             UIHelpers.showSnackBar(context, Colors.green, value["message"]);
             SharedPreference.saveUserData(jsonEncode(user));
             Future.delayed(const Duration(seconds: 2));
-            UIHelpers.nextScreenReplace(context, HomePage(user: user));
+            Navigator.of(Constants().navigatorKey.currentContext!).pushNamedAndRemoveUntil(
+              RouteGeneratorService.homeScreen,
+              (Route<dynamic> route) => false,
+              arguments: user,
+            );
           } else {
             UIHelpers.showSnackBar(context, Colors.red, value["message"]);
           }

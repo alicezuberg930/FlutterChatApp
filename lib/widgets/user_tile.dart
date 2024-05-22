@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
+import 'package:flutter_chat_app/service/route_generator_service.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 
 class UserTile extends StatelessWidget {
   final ChatUser chatUser;
@@ -11,7 +13,10 @@ class UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        UIHelpers.nextScreen(context, ChatPage(chatUser: chatUser));
+        Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(
+          RouteGeneratorService.chatScreen,
+          arguments: chatUser,
+        );
       },
       child: Container(
         width: MediaQuery.of(context).size.width,

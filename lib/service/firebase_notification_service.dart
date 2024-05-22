@@ -6,11 +6,11 @@ import 'dart:math' hide log;
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
-import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/service/awesome_notification_service.dart';
 import 'package:flutter_chat_app/service/general_app_service.dart';
+import 'package:flutter_chat_app/service/route_generator_service.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 
 class FirebaseNotificationService {
   NotificationModel? notificationModel;
@@ -96,7 +96,7 @@ class FirebaseNotificationService {
         UserConversation userConversation = UserConversation.fromJson(
           jsonDecode(notificationPayloadData?['data']),
         );
-        UIHelpers.nextScreen(navigatorKey, ChatPage(userConversation: userConversation));
+        Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.chatScreen, arguments: userConversation);
       }
     } catch (error) {
       print("Error opening Notification ==> $error");

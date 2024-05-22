@@ -1,17 +1,27 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/model/user.dart';
+import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
+import 'package:flutter_chat_app/screen/my_profile_screen.dart';
+import 'package:flutter_chat_app/screen/register_screen.dart';
+import 'package:flutter_chat_app/screen/search_screen.dart';
+import 'package:flutter_chat_app/screen/settings_screen.dart';
 import 'package:flutter_chat_app/screen/splash_screen.dart';
+import 'package:flutter_chat_app/screen/video_call_screen.dart';
 
 class RouteGeneratorService {
   static const String splashScreen = '/splash-screen';
   static const String loginScreen = '/login-screen';
   static const String chatScreen = '/chat-screen';
   static const String homeScreen = '/home-screen';
+  static const String videoCallScreen = '/video-call-screen';
+  static const String myProfileScreen = '/my-profile-screen';
+  static const String settingsScreen = '/settings-screen';
+  static const String searchScreen = '/search-screen';
+  static const String registerScreen = '/register-screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -26,12 +36,22 @@ class RouteGeneratorService {
         if (settings.arguments is UserConversation) chatPage = ChatPage(userConversation: settings.arguments as UserConversation);
         if (settings.arguments is ChatUser) chatPage = ChatPage(chatUser: settings.arguments as ChatUser);
         return pageRouteBuilder(chatPage!, settings);
+      case videoCallScreen:
+        return pageRouteBuilder(VideoCallScreen(userCallChannel: settings.arguments as UserCallChannel), settings);
+      case myProfileScreen:
+        return pageRouteBuilder(const MyProfileScreen(), settings);
+      case settingsScreen:
+        return pageRouteBuilder(const SettingsScreen(), settings);
+      case searchScreen:
+        return pageRouteBuilder(const SearchScreen(), settings);
+      case registerScreen:
+        return pageRouteBuilder(const RegisterPage(), settings);
       default:
-        return _errorRoute();
+        return errorRoute();
     }
   }
 
-  static Route<dynamic> _errorRoute() {
+  static Route<dynamic> errorRoute() {
     return MaterialPageRoute(builder: (context) {
       return Scaffold(
         appBar: AppBar(

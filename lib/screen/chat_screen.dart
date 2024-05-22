@@ -14,6 +14,8 @@ import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/screen/video_call_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
+import 'package:flutter_chat_app/service/route_generator_service.dart';
+import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:flutter_chat_app/widgets/message_tile.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' as foundation;
@@ -353,7 +355,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 //   widget.userConversation!.group?.id,
                 // );
                 // print(userCallChannel!.toJson());
-                if (context.mounted) UIHelpers.nextScreen(context, VideoCallScreen());
+                Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(
+                  RouteGeneratorService.loginScreen,
+                  arguments: UserCallChannel(),
+                );
               },
               icon: const Icon(Icons.video_call),
             ),

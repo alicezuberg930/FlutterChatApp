@@ -1,9 +1,5 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
-import 'package:flutter_chat_app/model/media.dart';
-import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/service/route_generator_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 

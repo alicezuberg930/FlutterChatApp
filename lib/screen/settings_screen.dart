@@ -22,7 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
           leading: IconButton(
             onPressed: () {
-              Navigator.pop(context, isDarkMode);
+              Navigator.pop(Constants().navigatorKey.currentContext!, isDarkMode);
             },
             icon: Icon(
               Icons.arrow_back,
@@ -40,10 +40,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () {
                     setState(() {
                       isDarkMode = !isDarkMode;
-                      SharedPreference.saveDarkMode(isDarkMode);
                     });
+                    SharedPreference.saveDarkMode(isDarkMode);
                   },
-                  leading: isDarkMode ? const Icon(Icons.dark_mode, color: Constants.primaryColor) : const Icon(Icons.light_mode, color: Constants.primaryColor),
+                  leading: isDarkMode
+                      ? const Icon(Icons.dark_mode, color: Constants.primaryColor)
+                      : const Icon(Icons.light_mode, color: Constants.primaryColor),
                   title: Text(
                     "Dark mode",
                     style: TextStyle(

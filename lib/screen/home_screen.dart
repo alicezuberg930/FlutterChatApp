@@ -11,6 +11,7 @@ import 'package:flutter_chat_app/screen/my_profile_screen.dart';
 import 'package:flutter_chat_app/screen/search_screen.dart';
 import 'package:flutter_chat_app/screen/settings_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
+import 'package:flutter_chat_app/service/route_generator_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 import 'package:flutter_chat_app/widgets/conversation_tile.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
@@ -229,7 +230,9 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ListTile(
-            onTap: () => {UIHelpers.nextScreen(context, const MyProfileScreen())},
+            onTap: () {
+              Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.myProfileScreen);
+            },
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.verified_user, color: Constants.primaryColor),
             title: Text(
@@ -243,13 +246,11 @@ class _HomePageState extends State<HomePage> {
           ListTile(
             onTap: () {
               toggleDrawer();
-              UIHelpers.nextScreen(
-                context,
-                const SettingsScreen(),
-                action: (value) {
-                  setState(() => isDarkMode = value);
-                },
-              );
+              Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.settingsScreen).then((value) {
+                setState(() {
+                  isDarkMode = value as bool;
+                });
+              });
             },
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.settings, color: Constants.primaryColor),
@@ -296,7 +297,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           onPressed: () async {
                             SharedPreference.clearAllData();
-                            UIHelpers.nextScreenReplace(context, const LoginPage());
+                            Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.loginScreen);
                           },
                           child: const Text("Yes"),
                         ),
@@ -472,7 +473,9 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           actions: [
             IconButton(
-              onPressed: () => UIHelpers.nextScreen(context, const SearchPage()),
+              onPressed: () {
+                Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.searchScreen);
+              },
               icon: const Icon(
                 Icons.search,
               ),
