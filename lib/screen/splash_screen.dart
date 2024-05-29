@@ -18,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   checkLogin() async {
-    await Future.delayed(const Duration(seconds: 4));
+    await Future.delayed(const Duration(seconds: 1));
     var userData = SharedPreference.getUserData();
     if (userData != null) {
       Navigator.of(Constants().navigatorKey.currentContext!).pushNamedAndRemoveUntil(

@@ -3,6 +3,7 @@ import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
+import 'package:flutter_chat_app/screen/create_group_screen.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/screen/my_profile_screen.dart';
@@ -22,6 +23,7 @@ class RouteGeneratorService {
   static const String settingsScreen = '/settings-screen';
   static const String searchScreen = '/search-screen';
   static const String registerScreen = '/register-screen';
+  static const String createGroupScreen = '/create-group-screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -46,6 +48,8 @@ class RouteGeneratorService {
         return pageRouteBuilder(const SearchScreen(), settings);
       case registerScreen:
         return pageRouteBuilder(const RegisterPage(), settings);
+      case createGroupScreen:
+        return pageRouteBuilder(const CreateGroupScreen(), settings);
       default:
         return errorRoute();
     }

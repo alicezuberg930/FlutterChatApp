@@ -6,10 +6,7 @@ import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
-import 'package:flutter_chat_app/screen/login_screen.dart';
-import 'package:flutter_chat_app/screen/my_profile_screen.dart';
-import 'package:flutter_chat_app/screen/search_screen.dart';
-import 'package:flutter_chat_app/screen/settings_screen.dart';
+import 'package:flutter_chat_app/model/user_friend.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/service/route_generator_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
@@ -29,7 +26,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   ImagePicker picker = ImagePicker();
   List<UserConversation>? userConversationList;
-  List<ChatUser>? friendList;
+  List<ChatUser> friendList = [];
   String? email;
   String groupAvatar = "";
   String friendAvatar = "";
@@ -43,7 +40,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     getUserConversations();
-    // getUserFriends();
+    getMyFriends();
     super.initState();
   }
 
@@ -56,11 +53,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  getUserFriends() async {
-    var friendData = await APIService.getUserFriends(widget.user.id!);
-    if (friendData != null) {
+  getMyFriends() async {
+    List<UserFriend> userFriendlist = await apiService!.getMyFriends();
+    List<ChatUser> tempFriendList = userFriendlist.map((message) => message.friend!).toList();
+    if (tempFriendList.isNotEmpty) {
       setState(() {
-        friendList = friendData.data;
+        friendList = tempFriendList;
       });
     }
   }
@@ -115,10 +113,10 @@ class _HomePageState extends State<HomePage> {
                       setState(() {
                         _isloading = true;
                       });
-                      await APIService.createGroup({
-                        "group_name": groupNameController.text,
-                        "admin_id": widget.user.id,
-                      });
+                      // await APIService.createGroup({
+                      //   "group_name": groupNameController.text,
+                      //   "admin_id": widget.user.id,
+                      // });
                       groupNameController.clear();
                       setState(() {
                         _isloading = false;
@@ -341,7 +339,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   friendListWidget() {
-    return friendList == null
+    return friendList.isEmpty
         ? const SizedBox.shrink()
         : Container(
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -349,15 +347,14 @@ class _HomePageState extends State<HomePage> {
             child: ListView.builder(
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
-              itemCount: friendList!.length,
+              itemCount: friendList.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    // UIHelpers.nextScreen(
-                    //   context,
-                    //   ChatPage(
-                    //   ),
-                    // );
+                    Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(
+                      RouteGeneratorService.chatScreen,
+                      arguments: friendList[index],
+                    );
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
@@ -378,7 +375,7 @@ class _HomePageState extends State<HomePage> {
                           margin: const EdgeInsets.only(top: 10),
                           width: 80,
                           child: Text(
-                            friendList![index].name!,
+                            friendList[index].name!,
                             textAlign: TextAlign.center,
                             style: TextStyle(color: isDarkMode ? Colors.white : Colors.black45),
                           ),
@@ -476,9 +473,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.searchScreen);
               },
-              icon: const Icon(
-                Icons.search,
-              ),
+              icon: const Icon(Icons.search),
             )
           ],
           elevation: 0,
@@ -496,7 +491,9 @@ class _HomePageState extends State<HomePage> {
         ),
         drawer: customDrawerWidget(),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => popUpDiolog(context),
+          onPressed: () {
+            Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.createGroupScreen);
+          },
           elevation: 0,
           backgroundColor: Theme.of(context).primaryColor,
           child: const Icon(Icons.add, color: Colors.white, size: 30),

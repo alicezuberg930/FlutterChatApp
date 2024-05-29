@@ -1,11 +1,10 @@
 import 'dart:io';
 
 class ApiURL {
-  static const apiUrl = "https://bb60-125-235-239-15.ngrok-free.app/api";
+  static const apiUrl = "https://5d49-125-235-239-15.ngrok-free.app/api";
   static const headers = {HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8'};
   static const login = "$apiUrl/login";
   static const register = "$apiUrl/register";
-  static const getUserFriends = "$apiUrl/get-user-friends";
   static const message = "$apiUrl/message";
   static const deleteMessage = "$apiUrl/delete-message";
   static const updateUserAvatar = "$apiUrl/update-user-avatar";
@@ -16,4 +15,8 @@ class ApiURL {
   static const conversation = "$apiUrl/conversation";
   static const checkForConversationWithUser = "$apiUrl/check-for-conversation-with-user";
   static const getMeeting = "$apiUrl/get-meeting";
+  static const friend = "$apiUrl/friend";
+  static const acceptFriendRequest = "$apiUrl/accept";
+  static const rejectFriendRequest = "$apiUrl/reject";
+  static const unfriend = "$apiUrl/unfriend";
 }

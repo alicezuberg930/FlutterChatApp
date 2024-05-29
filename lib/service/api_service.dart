@@ -3,10 +3,12 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_chat_app/common/api_url.dart';
+import 'package:flutter_chat_app/model/api_response.dart';
 import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/model/user.dart';
+import 'package:flutter_chat_app/model/user_friend.dart';
 import 'package:flutter_chat_app/service/http_service.dart';
 import 'package:http/http.dart' as http;
 
@@ -101,20 +103,6 @@ class APIService extends HttpService {
     }
   }
 
-  static Future getUserFriends(int userId) async {
-    try {
-      final response = await http.get(Uri.parse("${ApiURL.getUserFriends}?user_id=$userId"));
-      Map<String, dynamic> responseBody = json.decode(response.body);
-      if (response.statusCode == 200) {
-        return ChatUser.fromJson(responseBody);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-
   Future<List<Message>?> getConversationMessages(int conversationId, {int page = 1}) async {
     try {
       final response = await get(ApiURL.message, queryParameters: {"conversation_id": conversationId, "page": page});
@@ -147,10 +135,6 @@ class APIService extends HttpService {
     FormData formData = FormData.fromMap(params);
     if (files != null && files.isNotEmpty) {
       for (File? file in files) {
-        // final fileSize = file!.lengthSync() / 1024;
-        // if (fileSize > AppFileLimit.prescriptionFileSizeLimit) {
-        // file = await Utils.compressFile(file: file, quality: 60);
-        // }
         formData.files.add(
           MapEntry("medias[]", await MultipartFile.fromFile(file!.path)),
         );
@@ -172,21 +156,6 @@ class APIService extends HttpService {
     //   print(e.toString());
     //   return null;
     // }
-  }
-
-  static Future createGroup(Map<String, dynamic> params) async {
-    Map<String, dynamic>? responseBody;
-    try {
-      final response = await http.post(Uri.parse(ApiURL.group), body: params);
-      responseBody = json.decode(response.body);
-      if (response.statusCode == 200) {
-        return responseBody;
-      } else {
-        return responseBody;
-      }
-    } catch (e) {
-      return responseBody;
-    }
   }
 
   Future<UserConversation?> getUserConversationDetails(int conversationId) async {
@@ -235,17 +204,60 @@ class APIService extends HttpService {
   }
 
   Future<UserCallChannel?> getMeeting(int? receiverId, int? groupId) async {
-    // try {
-    final response = await get(ApiURL.getMeeting, queryParameters: {'receiver_id': receiverId, 'group_id': groupId});
-    dynamic responseBody = response.data;
-    print(responseBody);
-    if (response.statusCode == 200) {
-      return UserCallChannel.fromJson(responseBody["data"]);
-    } else {
+    try {
+      final response = await get(ApiURL.getMeeting, queryParameters: {'receiver_id': receiverId, 'group_id': groupId});
+      dynamic responseBody = response.data;
+      if (response.statusCode == 200) {
+        return UserCallChannel.fromJson(responseBody["data"]);
+      } else {
+        return null;
+      }
+    } catch (e) {
       return null;
     }
-    // } catch (e) {
-    //   return null;
-    // }
+  }
+
+  Future<List<UserFriend>> getMyFriends() async {
+    try {
+      final response = await get(ApiURL.friend);
+      dynamic responseBody = response.data;
+      if (response.statusCode == 200 && responseBody['data'].isNotEmpty) {
+        return List<UserFriend>.from(responseBody['data'].map((x) => UserFriend.fromJson(x))).toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<ApiResponse> acceptFriendRequest({required int friendId}) async {
+    final apiResult = await get(ApiURL.acceptFriendRequest, queryParameters: {'friend_id': friendId});
+    return ApiResponse.fromResponse(apiResult);
+  }
+
+  Future<ApiResponse> unfriend({required int friendId}) async {
+    final apiResult = await get(ApiURL.unfriend, queryParameters: {'friend_id': friendId});
+    return ApiResponse.fromResponse(apiResult);
+  }
+
+  Future<ApiResponse> rejectFriendRequest({required int friendId}) async {
+    final apiResult = await get(ApiURL.rejectFriendRequest, queryParameters: {'friend_id': friendId});
+    return ApiResponse.fromResponse(apiResult);
+  }
+
+  Future<ApiResponse> addFriend({required int friendId}) async {
+    final apiResult = await post(ApiURL.friend, {'friend_id': friendId});
+    return ApiResponse.fromResponse(apiResult);
+  }
+
+  Future<UserConversation> createGroup({required List<int> userIds, required String groupName}) async {
+    final apiResult = await post(ApiURL.group, {'user_ids': userIds, 'group_name': groupName});
+    final apiResponse = ApiResponse.fromResponse(apiResult);
+    if (apiResponse.allGood) {
+      return UserConversation.fromJson(apiResponse.body["data"]);
+    } else {
+      throw apiResponse.message!;
+    }
   }
 }
