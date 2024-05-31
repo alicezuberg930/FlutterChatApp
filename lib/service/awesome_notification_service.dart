@@ -51,7 +51,7 @@ class NotificationService {
         await initializeAwesomeNotification();
       }
     } on PlatformException catch (e) {
-      print("Failed to get notificaiton channels: '${e.message}'.");
+      // print("Failed to get notificaiton channels: '${e.message}'.");
     }
   }
 

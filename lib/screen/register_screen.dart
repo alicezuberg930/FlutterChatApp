@@ -24,6 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController fullnameController = TextEditingController();
   final formkey = GlobalKey<FormState>();
+  APIService apiService = APIService();
 
   @override
   void dispose() {
@@ -151,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
   register() async {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
-      String? ipAddress = await APIService.getPublicIP();
+      String? ipAddress = await apiService.getPublicIP();
       await APIService.register({
         "fullname": fullnameController.text,
         "email": emailController.text,

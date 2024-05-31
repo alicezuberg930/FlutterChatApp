@@ -13,33 +13,18 @@ import 'package:flutter_chat_app/service/http_service.dart';
 import 'package:http/http.dart' as http;
 
 class APIService extends HttpService {
-  static Future getPublicIP() async {
-    try {
-      const url = 'https://api.ipify.org';
-      var response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        return response.body;
-      } else {
-        return null;
-      }
-    } catch (e) {
+  Future<String?> getPublicIP() async {
+    Response? response = await get('https://api.ipify.org');
+    if (response.statusCode == 200) {
+      return response.data;
+    } else {
       return null;
     }
   }
 
-  Future login(Map<String, String>? params) async {
-    Response? response;
-    try {
-      response = await post(ApiURL.login, params);
-      // if (response.statusCode == 200) {
-      return response;
-      // } else {
-      //   return null;
-      // }
-    } catch (e) {
-      return response;
-      // return null;
-    }
+  Future<ApiResponse> login(Map<String, String>? params) async {
+    Response? response = await post(ApiURL.login, params);
+    return ApiResponse.fromResponse(response);
   }
 
   static Future register(Map<String, String>? params) async {
@@ -253,6 +238,16 @@ class APIService extends HttpService {
 
   Future<UserConversation> createGroup({required List<int> userIds, required String groupName}) async {
     final apiResult = await post(ApiURL.group, {'user_ids': userIds, 'group_name': groupName});
+    final apiResponse = ApiResponse.fromResponse(apiResult);
+    if (apiResponse.allGood) {
+      return UserConversation.fromJson(apiResponse.body["data"]);
+    } else {
+      throw apiResponse.message!;
+    }
+  }
+
+  Future<UserConversation> joinGroup(String link) async {
+    final apiResult = await post(ApiURL.joinGroup, {'link': link});
     final apiResponse = ApiResponse.fromResponse(apiResult);
     if (apiResponse.allGood) {
       return UserConversation.fromJson(apiResponse.body["data"]);

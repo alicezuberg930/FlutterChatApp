@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_app/model/group.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
+import 'package:flutter_chat_app/screen/conversation_info_screen.dart';
 import 'package:flutter_chat_app/screen/create_group_screen.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
 import 'package:flutter_chat_app/screen/my_profile_screen.dart';
+import 'package:flutter_chat_app/screen/qr_scanner_screen.dart';
 import 'package:flutter_chat_app/screen/register_screen.dart';
 import 'package:flutter_chat_app/screen/search_screen.dart';
 import 'package:flutter_chat_app/screen/settings_screen.dart';
@@ -24,6 +27,8 @@ class RouteGeneratorService {
   static const String searchScreen = '/search-screen';
   static const String registerScreen = '/register-screen';
   static const String createGroupScreen = '/create-group-screen';
+  static const String conversationInfoScreen = '/conversation-info-screen';
+  static const String qrCodeScannerScreen = '/qr-code-scanner-screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -50,6 +55,17 @@ class RouteGeneratorService {
         return pageRouteBuilder(const RegisterPage(), settings);
       case createGroupScreen:
         return pageRouteBuilder(const CreateGroupScreen(), settings);
+      case conversationInfoScreen:
+        Map<String, dynamic> map = settings.arguments as Map<String, dynamic>;
+        return pageRouteBuilder(
+          ConversationInfoScreen(
+            type: map["type"] as String,
+            group: map["group"] as Group,
+          ),
+          settings,
+        );
+      case qrCodeScannerScreen:
+        return pageRouteBuilder(const QrCodeScannerScreen(), settings);
       default:
         return errorRoute();
     }

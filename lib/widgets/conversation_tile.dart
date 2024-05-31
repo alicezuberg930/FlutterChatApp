@@ -2,9 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
-import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
-import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/service/route_generator_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
 
@@ -37,7 +35,7 @@ class ConversationTile extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold, color: isDarkMode ? Colors.grey : Colors.black45),
           ),
           subtitle: Text(
-            userConversation!.recentMessage!,
+            userConversation!.recentMessage ?? "",
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.grey : Colors.black45),
           ),
         ),

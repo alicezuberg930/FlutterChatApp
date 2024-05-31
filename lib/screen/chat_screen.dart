@@ -7,12 +7,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/common/scroll_behavior.dart';
 import 'package:flutter_chat_app/common/shared_preferences.dart';
-import 'package:flutter_chat_app/common/ui_helpers.dart';
 import 'package:flutter_chat_app/model/message.dart';
 import 'package:flutter_chat_app/model/user.dart';
 import 'package:flutter_chat_app/model/user_call_channel.dart';
 import 'package:flutter_chat_app/model/user_conversation.dart';
-import 'package:flutter_chat_app/screen/video_call_screen.dart';
 import 'package:flutter_chat_app/service/api_service.dart';
 import 'package:flutter_chat_app/service/route_generator_service.dart';
 import 'package:flutter_chat_app/shared/constants.dart';
@@ -363,7 +361,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               icon: const Icon(Icons.video_call),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(
+                  RouteGeneratorService.conversationInfoScreen,
+                  arguments: {"type": "group", "group": widget.userConversation!.group},
+                );
+              },
               icon: const Icon(Icons.info),
             )
           ],

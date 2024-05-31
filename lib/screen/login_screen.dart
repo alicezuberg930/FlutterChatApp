@@ -140,36 +140,37 @@ class _LoginPageState extends State<LoginPage> {
   login() async {
     if (formkey.currentState!.validate()) {
       Loader.show(context, progressIndicator: const CircularProgressIndicator());
-      String? fcmID = await FirebaseMessaging.instance.getToken();
-      String? ipAddress = await APIService.getPublicIP();
-      String? deviceIdentifier = await DeviceInfo.getDeviceIdentifier();
-      String? deviceModel = await DeviceInfo.getDeviceModel();
-      apiService.login({
-        'email': emailController.text,
-        'password': passwordController.text,
-        'ip_address': ipAddress!,
-        'fcm_id': fcmID!,
-        'device_id': deviceIdentifier!,
-        'device_model': deviceModel!,
-      }).then((value) {
-        if (value.statusCode == 200) {
-          ChatUser user = ChatUser.fromJson(value.data["data"]);
-          // if (value.data.statusCode == 200) {
-          UIHelpers.showSnackBar(context, Colors.green, value.data["message"]);
-          SharedPreference.saveUserData(jsonEncode(user));
-          SharedPreference.saveUserToken(value.data['bearer_token']);
-          Navigator.of(Constants().navigatorKey.currentContext!).pushNamedAndRemoveUntil(
-            RouteGeneratorService.homeScreen,
-            (Route<dynamic> route) => false,
-            arguments: user,
-          );
-          // } else {
-          //   UIHelpers.showSnackBar(context, Colors.red, value["message"]);
-          // }
-        } else {
-          UIHelpers.showSnackBar(context, Colors.red, value.data["message"]);
+      try {
+        String? fcmID = await FirebaseMessaging.instance.getToken();
+        String? ipAddress = await apiService.getPublicIP();
+        String? deviceIdentifier = await DeviceInfo.getDeviceIdentifier();
+        String? deviceModel = await DeviceInfo.getDeviceModel();
+        final apiResult = await apiService.login({
+          'email': emailController.text,
+          'password': passwordController.text,
+          'ip_address': ipAddress!,
+          'fcm_id': fcmID!,
+          'device_id': deviceIdentifier!,
+          'device_model': deviceModel!
+        });
+        if (mounted) {
+          if (apiResult.allGood) {
+            ChatUser user = ChatUser.fromJson(apiResult.body['data']);
+            UIHelpers.showSnackBar(context, Colors.green, apiResult.message);
+            SharedPreference.saveUserData(jsonEncode(user));
+            SharedPreference.saveUserToken(apiResult.body['bearer_token']);
+            Navigator.of(Constants().navigatorKey.currentContext!).pushNamedAndRemoveUntil(
+              RouteGeneratorService.homeScreen,
+              (Route<dynamic> route) => false,
+              arguments: user,
+            );
+          } else {
+            UIHelpers.showSnackBar(context, Colors.red, apiResult.message);
+          }
         }
-      });
+      } catch (e) {
+        if (mounted) UIHelpers.showSnackBar(context, Colors.red, e.toString());
+      }
       Loader.hide();
     }
   }

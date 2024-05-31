@@ -43,6 +43,8 @@ dependencies:
   file_picker: ^5.3.1
   rxdart: ^0.27.7
   path_provider: ^2.1.1
+  qr_code_scanner: ^1.0.1
+  qr_flutter: ^4.1.0
   flutter:
     sdk: flutter
 

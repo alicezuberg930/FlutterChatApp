@@ -14,6 +14,8 @@ import 'package:flutter_chat_app/widgets/conversation_tile.dart';
 import 'package:flutter_chat_app/widgets/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class HomePage extends StatefulWidget {
   final ChatUser user;
@@ -25,17 +27,17 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   ImagePicker picker = ImagePicker();
-  List<UserConversation>? userConversationList;
+  List<UserConversation> userConversationList = [];
   List<ChatUser> friendList = [];
   String? email;
   String groupAvatar = "";
   String friendAvatar = "";
   Stream? userMetaData;
   TextEditingController groupNameController = TextEditingController();
-  bool _isloading = false;
   bool isDarkMode = SharedPreference.getDarkMode() ?? false;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   APIService? apiService = APIService();
+  TextEditingController groupLink = TextEditingController();
 
   @override
   void initState() {
@@ -63,103 +65,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  popUpDiolog(BuildContext context) {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Tạo ra 1 nhóm', textAlign: TextAlign.left),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _isloading
-                      ? Center(
-                          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
-                        )
-                      : TextField(
-                          controller: groupNameController,
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Colors.red),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                        )
-                ],
-              ),
-              actions: [
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    padding: const EdgeInsets.all(10),
-                  ),
-                  child: const Text('Hủy'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (groupNameController.text.isNotEmpty) {
-                      setState(() {
-                        _isloading = true;
-                      });
-                      // await APIService.createGroup({
-                      //   "group_name": groupNameController.text,
-                      //   "admin_id": widget.user.id,
-                      // });
-                      groupNameController.clear();
-                      setState(() {
-                        _isloading = false;
-                      });
-                      if (mounted) {
-                        Navigator.of(context).pop();
-                        UIHelpers.showSnackBar(context, Colors.green, "Nhóm được tạo thành công");
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    padding: const EdgeInsets.all(10),
-                  ),
-                  child: const Text('Tạo'),
-                )
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
   noConversationWidget() {
     return Container(
       margin: const EdgeInsets.only(top: 20),
       alignment: Alignment.center,
-      child: Column(
-        children: [
-          Container(),
-          GestureDetector(
-            onTap: () {
-              popUpDiolog(context);
-            },
-            child: Icon(Icons.add_circle, color: Colors.grey[700], size: 70),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'You dont have any conversations.',
-            textAlign: TextAlign.center,
-          )
-        ],
+      child: const Text(
+        'You dont have any conversations.',
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -215,12 +127,70 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 20),
           Divider(height: 4, color: isDarkMode ? Colors.white : Colors.black),
           ListTile(
-            onTap: () => {},
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        title: const Text('Enter group link', textAlign: TextAlign.left),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              controller: groupLink,
+                              decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(color: Colors.red),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                final apiResponse = await apiService!.joinGroup(groupLink.text);
+                                Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(
+                                  RouteGeneratorService.chatScreen,
+                                  arguments: apiResponse,
+                                );
+                              } catch (e) {
+                                if (mounted) {
+                                  Navigator.of(context).pop();
+                                  UIHelpers.showSnackBar(context, Colors.red, e.toString());
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              padding: const EdgeInsets.all(10),
+                            ),
+                            child: const Text('Create'),
+                          )
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+            },
             selected: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
             leading: const Icon(Icons.group, color: Constants.primaryColor),
             title: Text(
-              "Nhóm",
+              "Join Group",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: isDarkMode ? Colors.white : Colors.black,
@@ -321,17 +291,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   conversationsListWidget() {
-    return userConversationList == null
+    return userConversationList.isEmpty
         ? noConversationWidget()
         : ScrollConfiguration(
             behavior: RemoveGlowingBehavior(),
             child: RefreshIndicator(
               onRefresh: () => getUserConversations(),
               child: ListView.builder(
-                itemCount: userConversationList!.length,
+                itemCount: userConversationList.length,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  return ConversationTile(userConversation: userConversationList![index]);
+                  return ConversationTile(userConversation: userConversationList[index]);
                 },
               ),
             ),
@@ -364,7 +334,7 @@ class _HomePageState extends State<HomePage> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(100),
                           child: Image(
-                            image: NetworkImage(friendList![index].avatar!),
+                            image: NetworkImage(friendList[index].avatar!),
                             height: 60,
                             width: 60,
                             fit: BoxFit.cover,
@@ -474,6 +444,14 @@ class _HomePageState extends State<HomePage> {
                 Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.searchScreen);
               },
               icon: const Icon(Icons.search),
+            ),
+            IconButton(
+              onPressed: () async {
+                PermissionStatus permission = await Permission.camera.request();
+                if (permission.isDenied) openAppSettings();
+                Navigator.of(Constants().navigatorKey.currentContext!).pushNamed(RouteGeneratorService.qrCodeScannerScreen);
+              },
+              icon: const Icon(Icons.qr_code_scanner),
             )
           ],
           elevation: 0,

@@ -7,8 +7,9 @@ class Group {
   int? adminID;
   String? avatar;
   List<ChatUser>? users;
+  String? link;
 
-  Group({this.id, this.groupName, this.isActive, this.avatar, this.adminID, this.users});
+  Group({this.id, this.groupName, this.isActive, this.avatar, this.adminID, this.users, this.link});
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
@@ -17,6 +18,7 @@ class Group {
       isActive: json['is_active'],
       avatar: json['avatar'],
       adminID: json['admin_id'],
+      link: json['link'],
       users: List<ChatUser>.from(json["users"].map((x) => ChatUser.fromJson(x))),
     );
   }
@@ -28,6 +30,7 @@ class Group {
       "is_active": isActive,
       "avatar": avatar,
       "admin_id": adminID,
+      "link": link,
       "users": users?.map((e) => e.toJson()),
     };
   }

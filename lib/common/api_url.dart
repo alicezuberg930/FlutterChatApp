@@ -19,4 +19,5 @@ class ApiURL {
   static const acceptFriendRequest = "$apiUrl/accept";
   static const rejectFriendRequest = "$apiUrl/reject";
   static const unfriend = "$apiUrl/unfriend";
+  static const joinGroup = "$apiUrl/join/group";
 }
